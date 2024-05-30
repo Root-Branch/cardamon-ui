@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const baseApi = axios.create({
-  baseURL: process.env.VUE_APP_API_BASE_URL, // Ensure you have this in your .env file
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 10000,
   headers: {
     Accept: 'applications/json',
@@ -19,20 +19,19 @@ baseApi.interceptors.request.use(
 )
 
 baseApi.interceptors.response.use(
-  async (response) => {
-    const res = response.data
-    switch (+res.code) {
+  async (res) => {
+    switch (+res.status) {
       case 200000:
       case 200: // OK
-        return res
+        return await Promise.resolve(res)
       case 401: // Unauthorized:
         return await Promise.reject(res)
       case 404: // Not found
       case 500: // Internal Server Error:
       case 400: // Bad Request
-        return await Promise.reject(res.message)
+        return await Promise.reject('Failed to fetch data')
       default:
-        return await Promise.reject(res.message || 'Unknown error occurred')
+        return await Promise.reject('Failed to fetch data')
     }
   },
   (error) => {

@@ -1,16 +1,17 @@
 export interface Metric {
-  metric_type: string
+  metricType: string
   type: string
   value: number
 }
 
-export interface Run {
+export interface Scenario {
   id: string
   startTime: string
   endTime: string
   metrics: Metric[]
+  scenarioName: string
 }
 
-export interface RunsResponse {
-  data: Run[]
+export interface ScenariosResponse {
+  data: Scenario[]
 }
