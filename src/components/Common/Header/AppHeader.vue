@@ -1,14 +1,20 @@
 <template>
-    <header class="header">
-        <div class="header-container">
-            <div class="logo-section">
-                <img src="/logo.svg" alt="Logo" class="logo-image">
+    <header class="app-header">
+        <div class="app-header__container">
+            <div class="app-header__logo-section">
+                <img src="/logo.svg" alt="Logo" class="app-header__logo-image">
             </div>
 
-            <div class="right-section">
+            <div class="app-header__right-section">
+                <!-- Dark Mode Toggle Button -->
+                <button @click="toggleDarkMode" class="app-header__toggle-theme-button">
+                    <font-awesome-icon :icon="darkMode ? 'moon' : 'sun'" />
+                    <span>{{ darkMode ? 'Dark Mode' : 'Light Mode' }}</span>
+                </button>
+
                 <!-- Add Widget Button -->
-                <div class="button-container">
-                    <fwb-button pill class="add-widget-button" @click="openSidebar">
+                <div class="app-header__button-container">
+                    <fwb-button pill class="app-header__add-widget-button" @click="openSidebar">
                         <template #prefix>
                             <font-awesome-icon icon="circle-plus" class="mr-2" />
                         </template>
@@ -19,15 +25,15 @@
                 <!-- Database Info Icon with Tooltip -->
                 <fwb-tooltip placement="bottom">
                     <template #trigger>
-                        <font-awesome-layers class="fa-lg db-icon">
-                            <font-awesome-icon icon="fa-solid fa-circle" class="circle-icon" transform="grow-13" />
-                            <font-awesome-icon icon="fa-solid fa-database" class="database-icon" />
+                        <font-awesome-layers class="fa-lg app-header__db-icon">
+                            <font-awesome-icon icon="fa-solid fa-circle" class="app-header__circle-icon" transform="grow-13" />
+                            <font-awesome-icon icon="fa-solid fa-database" class="app-header__database-icon" />
                         </font-awesome-layers>
                     </template>
                     <template #content>
-                        <div class="tooltip-content">
-                            <span class="text-sm font-bold">Database Endpoint: </span>
-                            <span class="text-sm text-gray-500 font-normal">Database URL info</span>
+                        <div class="app-header__tooltip-content">
+                            <span class="tooltip-content__label">Database Endpoint: </span>
+                            <span class="tooltip-content__info">Database URL info</span>
                         </div>
                     </template>
                 </fwb-tooltip>
@@ -40,56 +46,77 @@
 import { FwbButton, FwbTooltip } from 'flowbite-vue';
 import { FontAwesomeIcon, FontAwesomeLayers } from '@fortawesome/vue-fontawesome';
 import { useWidgetStore } from '@/stores/widgets';
+import { useThemeStore } from '@/stores/theme';
+import { computed } from 'vue';
 
 const widgetStore = useWidgetStore();
 
 const openSidebar = () => {
     widgetStore.setSidebarVisible(true);
 };
+
+const themeStore = useThemeStore();
+const darkMode = computed(() => themeStore.darkMode);
+
+const toggleDarkMode = () => {
+  themeStore.toggleDarkMode();
+};
 </script>
 
 <style scoped>
-.header {
-    @apply fixed top-0 z-50 h-[81px] w-full border-b border-solid border-gray-200 bg-white
+.app-header {
+    @apply fixed top-0 z-50 h-[81px] w-full border-b border-solid border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800;
 }
 
-.header-container {
+.app-header__container {
     @apply flex h-full items-center justify-between pr-10;
 }
 
-.logo-section {
-    @apply flex items-center justify-center min-w-[240px] h-full border-r border-solid border-gray-200;
+.app-header__logo-section {
+    @apply flex items-center justify-center min-w-[240px] h-full border-r border-solid border-gray-200 dark:border-gray-800;
 }
 
-.logo-image {
+.app-header__logo-image {
     @apply h-10;
 }
 
-.right-section {
+.app-header__right-section {
     @apply flex items-center space-x-4 pr-10;
 }
 
-.button-container {
+.app-header__button-container {
     @apply pr-4;
 }
 
-.add-widget-button {
-    @apply bg-blue-600 text-white border-none;
+.app-header__add-widget-button {
+    @apply bg-blue-600 text-white border-none dark:bg-blue-700 dark:text-white;
 }
 
-.db-icon {
-    @apply text-gray-600;
+.app-header__db-icon {
+    @apply text-gray-600 dark:text-gray-300;
 }
 
-.circle-icon {
-    @apply text-neutral-400;
+.app-header__circle-icon {
+    @apply text-neutral-400 dark:text-neutral-600;
 }
 
-.database-icon {
-    @apply text-white;
+.app-header__database-icon {
+    @apply text-white dark:text-gray-200;
 }
 
-.tooltip-content {
-    @apply p-2 mr-4 rounded-lg border border-gray-200;
+.app-header__tooltip-content {
+    @apply p-2 mr-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800;
+}
+
+.tooltip-content__label {
+    @apply text-sm font-bold dark:text-white;
+}
+
+.tooltip-content__info {
+    @apply text-sm text-gray-500 font-normal dark:text-gray-400;
+}
+
+.app-header__toggle-theme-button {
+  @apply flex items-center text-sm space-x-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 p-2 rounded-2xl;
 }
 </style>

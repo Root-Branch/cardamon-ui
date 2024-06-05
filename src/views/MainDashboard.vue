@@ -1,23 +1,23 @@
 <template>
     <MainLayout>
         <template #title>
-            <h1 class="text-2xl font-bold">Cardamon Dashboard</h1>
+            <h1 class="main-layout__title">Cardamon Dashboard</h1>
         </template>
         <template #filters>
             <TimeFilter />
         </template>
         <template #dashboard>
             <AppDashboard v-if="!loading" :widgets="widgets" />
-            <div v-else class="loading-spinner">Loading...</div>
+            <div v-else class="main-layout__loading-spinner">Loading...</div>
         </template>
     </MainLayout>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
 import MainLayout from '@/layouts/MainLayout.vue';
 import AppDashboard from '@/components/Dashboard/AppDashboard.vue';
 import TimeFilter from '@/components/Common/Filters/TimeFilter.vue';
+import { ref, onMounted, watch } from 'vue';
 import { useWidgetStore } from '@/stores/widgets';
 import { useDateRangeStore } from '@/stores/dateRange';
 import { useRunsStore } from '@/stores/runs';
@@ -64,11 +64,22 @@ watch(
         widgets.value = newWidgets;
     }
 );
-
 </script>
 
 <style scoped>
-.loading-spinner {
+.main-layout__title {
+    @apply text-2xl font-bold dark:text-white;
+}
+
+.main-layout__filters {
+    @apply mt-4 ml-2;
+}
+
+.main-layout__dashboard {
+    @apply mt-4;
+}
+
+.main-layout__loading-spinner {
     @apply flex items-center justify-center h-full;
 }
 </style>

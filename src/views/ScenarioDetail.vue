@@ -1,14 +1,14 @@
 <template>
     <MainLayout>
         <template #title>
-            <h1 class="text-2xl font-bold">Scenario Detail</h1>
+            <h1 class="main-layout__title">Scenario Detail</h1>
         </template>
         <template #breadcrumbs>
             <AppBreadcrumb />
         </template>
         <template #dashboard>
             <AppDashboard v-if="!loading" :widgets="widgets" />
-            <div v-else class="loading-spinner">Loading...</div>
+            <div v-else class="main-layout__loading-spinner">Loading...</div>
         </template>
     </MainLayout>
 </template>
@@ -64,7 +64,11 @@ watch(
 </script>
 
 <style scoped>
-.loading-spinner {
+.main-layout__title {
+    @apply text-2xl font-bold dark:text-white;
+}
+
+.main-layout__loading-spinner {
     @apply flex items-center justify-center h-full;
 }
 </style>

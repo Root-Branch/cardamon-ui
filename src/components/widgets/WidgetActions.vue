@@ -1,21 +1,19 @@
 <template>
-    <div class="absolute top-2 right-2 flex space-x-2">
+    <div class="widget-actions">
         <fwb-dropdown text="Bottom" align-to-end>
             <template #trigger>
                 <button :class="buttonClass">
                     <font-awesome-icon icon="ellipsis-v" />
                 </button>
             </template>
-            <div class="bg-white rounded shadow-lg p-2">
-                <button @click="duplicateWidget"
-                    class="flex items-center space-x-2 p-2 cursor-pointer hover:bg-blue-50 rounded text-blue-600 w-full text-left">
+            <div class="widget-actions__dropdown-menu">
+                <button @click="duplicateWidget" class="widget-actions__button widget-actions__button--duplicate">
                     <font-awesome-icon icon="clone" />
-                    <span class='text-sm font-light'>Duplicate</span>
+                    <span class="widget-actions__text">Duplicate</span>
                 </button>
-                <button @click="deleteWidget"
-                    class="flex items-center space-x-2 p-2 cursor-pointer hover:bg-red-50 rounded text-red-600 w-full text-left">
+                <button @click="deleteWidget" class="widget-actions__button widget-actions__button--delete">
                     <font-awesome-icon icon="trash" />
-                    <span class='text-sm font-light'>Delete</span>
+                    <span class="widget-actions__text">Delete</span>
                 </button>
             </div>
         </fwb-dropdown>
@@ -42,6 +40,40 @@ const deleteWidget = () => {
 };
 
 const buttonClass = computed(() => {
-    return props.darkBackground ? 'text-white' : 'text-gray-800';
+    return props.darkBackground ? 'widget-actions__trigger--dark' : 'widget-actions__trigger';
 });
 </script>
+
+<style scoped>
+.widget-actions {
+    @apply absolute top-2 right-2 flex space-x-2;
+}
+
+.widget-actions__dropdown-menu {
+    @apply bg-white dark:bg-gray-800 rounded shadow-lg p-2;
+}
+
+.widget-actions__button {
+    @apply flex items-center space-x-2 p-2 cursor-pointer rounded w-full text-left;
+}
+
+.widget-actions__button--duplicate {
+    @apply hover:bg-blue-50 dark:hover:bg-blue-900 text-blue-600 dark:text-blue-400;
+}
+
+.widget-actions__button--delete {
+    @apply hover:bg-red-50 dark:hover:bg-red-900 text-red-600 dark:text-red-400;
+}
+
+.widget-actions__text {
+    @apply text-sm font-light;
+}
+
+.widget-actions__trigger {
+    @apply text-gray-800;
+}
+
+.widget-actions__trigger--dark {
+    @apply text-white;
+}
+</style>

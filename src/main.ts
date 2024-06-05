@@ -11,6 +11,7 @@ import router from './router'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon, FontAwesomeLayers } from '@fortawesome/vue-fontawesome'
+import { useThemeStore } from './stores/theme'
 
 library.add(fas)
 
@@ -24,5 +25,8 @@ pinia.use(piniaPluginPersistedstate)
 
 app.use(pinia)
 app.use(router)
+
+const themeStore = useThemeStore();
+themeStore.applyTheme();
 
 app.mount('#app')

@@ -1,41 +1,44 @@
 <template>
   <div :id="data.id" :gs-id="data.id" :gs-x="data.grid.x" :gs-y="data.grid.y" :gs-w="data.grid.w" :gs-h="data.grid.h"
     :gs-min-w="minWidth" :gs-min-h="minHeight">
-    <div class="grid-stack-item-content grid-stack-item p-6 rounded-lg drop-shadow-widget bg-white">
+    <div class="grid-stack-item-content grid-stack-item dynamic-chart">
       <!-- Header with title and actions -->
-      <div class="header">
-        <h3 class="title">{{ titleText }}</h3>
+      <div class="dynamic-chart__header">
+        <h3 class="dynamic-chart__title">{{ titleText }}</h3>
         <WidgetActions @duplicateWidget="duplicateWidget" @deleteWidget="deleteWidget" :dark-background="false" />
       </div>
       <!-- Metric buttons and chart type selector -->
-      <div class="controls">
-        <div class="metrics">
+      <div class="dynamic-chart__controls">
+        <div class="dynamic-chart__metrics">
           <button v-for="metric in metrics" :key="metric" @click="selectMetric(metric)"
-            :class="['metric-button', { active: selectedMetric === metric }]">
+            :class="['dynamic-chart__metric-button', { active: selectedMetric === metric }]">
             {{ metric }}
           </button>
         </div>
         <fwb-dropdown :text="chartTypeText" align-to-end>
           <template #trigger>
-            <button class="chart-type-button">
+            <button class="dynamic-chart__chart-type-button">
               <span class="mr-2">{{ chartTypeText }}</span>
               <font-awesome-icon icon="chevron-down" />
             </button>
           </template>
-          <div class="dropdown-menu">
-            <button @click="() => changeChartType(ChartType.LINE)" class="dropdown-item">Line Chart</button>
-            <button @click="() => changeChartType(ChartType.BAR)" class="dropdown-item">Bar Chart</button>
-            <button @click="() => changeChartType(ChartType.PIE)" class="dropdown-item">Pie Chart</button>
+          <div class="dynamic-chart__dropdown-menu">
+            <button @click="() => changeChartType(ChartType.LINE)" class="dynamic-chart__dropdown-item">Line
+              Chart</button>
+            <button @click="() => changeChartType(ChartType.BAR)" class="dynamic-chart__dropdown-item">Bar
+              Chart</button>
+            <button @click="() => changeChartType(ChartType.PIE)" class="dynamic-chart__dropdown-item">Pie
+              Chart</button>
           </div>
         </fwb-dropdown>
       </div>
       <!-- Total value display -->
-      <div class="total">
-        <div class="total-title">TOTAL {{ selectedMetric.replace('_', ' ') }}</div>
-        <div class="total-value">{{ totalValue }} {{ unit }}</div>
+      <div class="dynamic-chart__total">
+        <div class="dynamic-chart__total-title">TOTAL {{ selectedMetric.replace('_', ' ') }}</div>
+        <div class="dynamic-chart__total-value">{{ totalValue }} {{ unit }}</div>
       </div>
       <!-- Chart canvas -->
-      <div class="chart-container mt-4">
+      <div class="dynamic-chart__chart-container">
         <component :is="ChartComponent" :chart-data="chartData" :chart-options="chartOptions" />
       </div>
     </div>
@@ -54,7 +57,8 @@ import LineChart from '../Charts/LineChart.vue';
 import BarChart from '../Charts/BarChart.vue';
 import PieChart from '../Charts/PieChart.vue';
 import { ChartType, MetricType, type MetaData } from '@/types/chart.types';
-import { chartBackgroundColor, chartBorderColor } from '@/constants/chart.const';
+import { chartBackgroundColor, chartBorderColor, darkModeChartBackgroundColor, darkModeChartBorderColor } from '@/constants/chart.const';
+import { useThemeStore } from '@/stores/theme';
 
 const minWidth = 3;
 const minHeight = 5;
@@ -125,6 +129,9 @@ const chartTypeText = computed(() => {
   }
 });
 
+const themeStore = useThemeStore();
+const darkMode = computed(() => themeStore.darkMode);
+
 const chartData = computed(() => ({
   labels: props.data.metadata.data.map(d => new Date(d.startTime).toLocaleDateString()),
   datasets: [
@@ -134,23 +141,51 @@ const chartData = computed(() => ({
         const metric = d.metrics.find(m => m.metricType === selectedMetric.value);
         return metric ? metric.value : 0;
       }),
-      backgroundColor: chartType.value === ChartType.PIE ? chartBackgroundColor : chartBackgroundColor[0],
-      borderColor: chartType.value === ChartType.PIE ? chartBorderColor : chartBorderColor[0],
+      backgroundColor: chartType.value === ChartType.PIE
+        ? (darkMode.value ? darkModeChartBackgroundColor : chartBackgroundColor)
+        : (darkMode.value ? darkModeChartBackgroundColor[0] : chartBackgroundColor[0]),
+      borderColor: chartType.value === ChartType.PIE
+        ? (darkMode.value ? darkModeChartBorderColor : chartBorderColor)
+        : (darkMode.value ? darkModeChartBorderColor[0] : chartBorderColor[0]),
       borderWidth: 1,
     },
   ],
 }));
 
-const chartOptions = {
+const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     tooltip: {
       enabled: true,
+      backgroundColor: darkMode.value ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
+      titleColor: darkMode.value ? 'black' : 'white',
+      bodyColor: darkMode.value ? 'black' : 'white',
     },
     legend: {
       display: true,
       position: 'bottom',
+      labels: {
+        color: darkMode.value ? 'white' : 'black',
+      },
+    },
+  },
+  scales: {
+    x: {
+      ticks: {
+        color: darkMode.value ? 'white' : 'black',
+      },
+      grid: {
+        color: darkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+      },
+    },
+    y: {
+      ticks: {
+        color: darkMode.value ? 'white' : 'black',
+      },
+      grid: {
+        color: darkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+      },
     },
   },
   interaction: {
@@ -158,7 +193,7 @@ const chartOptions = {
     axis: 'x',
     intersect: false,
   },
-};
+}));
 
 // Change chart type and selected metric
 const changeChartType = (type: ChartType) => {
@@ -175,59 +210,63 @@ const { duplicateWidget, deleteWidget } = useWidgetActions(props, emit);
 </script>
 
 <style scoped>
-.header {
+.dynamic-chart {
+  @apply p-6 rounded-lg drop-shadow-widget bg-white dark:bg-gray-800 dark:text-gray-200
+}
+
+.dynamic-chart__header {
   @apply flex justify-between items-center;
 }
 
-.title {
+.dynamic-chart__title {
   @apply text-lg font-semibold;
 }
 
-.controls {
+.dynamic-chart__controls {
   @apply flex justify-between items-center mt-4;
 }
 
-.metrics {
+.dynamic-chart__metrics {
   @apply flex space-x-2;
 }
 
-.metric-button {
+.dynamic-chart__metric-button {
   @apply bg-gray-400 text-white px-6 py-2 rounded-full text-xs font-light;
 }
 
-.metric-button.active {
+.dynamic-chart__metric-button.active {
   @apply bg-blue-500 text-white;
 }
 
-.metric-button:not(.active):hover {
+.dynamic-chart__metric-button:not(.active):hover {
   @apply bg-gray-300;
 }
 
-.chart-type-button {
-  @apply text-gray-500 flex justify-between items-center rounded-full px-6 py-2 border border-gray-300 text-sm;
+.dynamic-chart__chart-type-button {
+  @apply text-gray-500 flex justify-between items-center rounded-full px-6 py-2 border border-gray-300 text-sm dark:text-white dark:border-gray-600;
 }
 
-.dropdown-menu {
-  @apply bg-white rounded shadow-lg w-40 text-sm;
+.dynamic-chart__dropdown-menu {
+  @apply bg-white rounded shadow-lg w-40 text-sm dark:bg-gray-800 dark:text-gray-200;
 }
 
-.dropdown-item {
-  @apply p-2 w-full hover:bg-gray-100;
+.dynamic-chart__dropdown-item {
+  @apply p-2 w-full hover:bg-gray-100 dark:hover:bg-gray-700;
 }
 
-.total {
+.dynamic-chart__total {
   @apply text-left mt-8;
 }
 
-.total-title {
-  @apply text-sm font-light text-gray-500;
+.dynamic-chart__total-title {
+  @apply text-sm font-light text-gray-500 dark:text-gray-400;
 }
 
-.total-value {
-  @apply text-5xl font-bold text-chart-value mt-2;
+.dynamic-chart__total-value {
+  @apply text-5xl font-bold text-chart-value mt-2 dark:text-white;
 }
 
-.chart-container {
+.dynamic-chart__chart-container {
   @apply mt-4;
 }
-</style>import { chartBackgroundColor, chartBorderColor } from '@/constants/chart';
+</style>, darkModeChartBackgroundColor, darkModeChartBorderColor

@@ -1,16 +1,16 @@
 <template>
     <fwb-breadcrumb>
-        <fwb-breadcrumb-item class="breadcrumb-item" home href="/dashboard">
+        <fwb-breadcrumb-item class="breadcrumb__item" home href="/dashboard">
             <template #home-icon>
-                <font-awesome-icon :icon="['fas', 'clone']" class="icon breadcrumb-item__text" />'
+                <font-awesome-icon :icon="['fas', 'clone']" class="breadcrumb__icon breadcrumb__item-text" />
             </template>
-            <span class="breadcrumb-item__text">Dashboard</span>
+            <span class="breadcrumb__item-text">Dashboard</span>
         </fwb-breadcrumb-item>
-        <fwb-breadcrumb-item class="breadcrumb-item" v-if="runId">
-            <span class="breadcrumb-item__text">Cardamon Run ID: {{ runId }}</span>
+        <fwb-breadcrumb-item class="breadcrumb__item" v-if="runId">
+            <span class="breadcrumb__item-text">Cardamon Run ID: {{ runId }}</span>
         </fwb-breadcrumb-item>
-        <fwb-breadcrumb-item class="breadcrumb-item" v-if="scenarioId">
-            <span class="breadcrumb-item__text">Scenario ID: {{ scenarioId }}</span>
+        <fwb-breadcrumb-item class="breadcrumb__item" v-if="scenarioId">
+            <span class="breadcrumb__item-text">Scenario ID: {{ scenarioId }}</span>
         </fwb-breadcrumb-item>
     </fwb-breadcrumb>
 </template>
@@ -26,15 +26,15 @@ const scenarioId = route.params.scenarioId;
 </script>
 
 <style scoped>
-.mr-2 {
-    margin-right: 0.5rem;
+.breadcrumb__item {
+    @apply text-gray-500 dark:text-gray-300;
 }
 
-.breadcrumb-item {
-    @apply text-gray-500;
+.breadcrumb__item-text {
+    @apply ml-2 font-light text-gray-500 dark:text-gray-300;
 }
 
-.breadcrumb-item__text {
-    @apply ml-2 font-light text-gray-500;
+.breadcrumb__icon {
+    @apply mr-2;
 }
 </style>

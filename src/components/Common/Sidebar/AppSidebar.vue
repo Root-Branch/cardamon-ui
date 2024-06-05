@@ -25,6 +25,6 @@ const menuItems: MenuItem[] = [
 
 <style scoped>
 .sidebar {
-  @apply fixed z-50 flex min-w-[240px] flex-col border-r border-solid border-gray-200 bg-white h-full;
+  @apply fixed z-50 flex min-w-[240px] flex-col border-r border-solid border-gray-200 bg-white h-full dark:bg-gray-900 dark:border-gray-800;
 }
 </style>
