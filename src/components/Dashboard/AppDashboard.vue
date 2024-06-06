@@ -8,8 +8,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, onBeforeUnmount, watch } from 'vue';
 import { WidgetType, type Widget } from '@/types/widgets.types';
-import { ViewType } from '@/types/views.types';
-import { GridStack } from 'gridstack';
+import { GridStack, type GridStackNode } from 'gridstack';
 import { useRoute } from 'vue-router';
 import { useWidgetStore } from '@/stores/widgets';
 import 'gridstack/dist/gridstack.min.css';
@@ -52,6 +51,7 @@ const initGridStack = async () => {
       cellHeight: 100,
       margin: 10,
     });
+    grid.value.on('change', onChange);
     makeWidgets(props.widgets);
   }
 };
@@ -88,6 +88,18 @@ const handleDuplicateWidget = async (widget: Widget) => {
   widgetStore.duplicateWidget(widget, viewType, id);
 };
 
+const onChange = (event: Event, items: Array<GridStackNode>) => {
+  const { viewType } = determineViewTypeAndId(route);
+  const updatedPositions = items.map(item => ({
+    id: item.id,
+    x: item.x,
+    y: item.y,
+    w: item.w,
+    h: item.h,
+  }));
+  widgetStore.updateWidgetsPos(updatedPositions, viewType);
+};
+
 watch(
   () => props.widgets,
   async () => {
@@ -105,8 +117,9 @@ onBeforeUnmount(() => {
   }
 });
 
-onMounted(initGridStack);
-</script>
+onMounted(() => {
+  initGridStack();
+});</script>
 
 <style scoped>
 .grid-stack {

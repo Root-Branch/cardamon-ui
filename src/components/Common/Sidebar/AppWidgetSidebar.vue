@@ -28,7 +28,7 @@
                 <input v-model="searchQuery" type="text" placeholder="Search widgets here..." class="sidebar__search-input" />
             </div>
             <div class="sidebar__widget-list">
-                <button v-for="widget in filteredWidgets" :key="widget.id" @click="addWidget(widget)"
+                <button v-for="widget in filteredWidgets" :key="widget.title" @click="addWidget(widget)"
                     class="sidebar__widget-item">
                     <div class="sidebar__widget-info">
                         <h3 class="sidebar__widget-title">{{ widget.title }}</h3>
@@ -47,8 +47,7 @@
 import { ref, computed } from 'vue';
 import { useWidgetStore } from '@/stores/widgets';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { WidgetType } from '@/types/widgets.types';
-import { ViewType } from '@/types/views.types';
+import { WidgetType, type Widget, type WidgetOption } from '@/types/widgets.types';
 import { useRoute } from 'vue-router';
 import { availableWidgets } from '@/constants/widget.const';
 import { FwbDropdown } from 'flowbite-vue';
@@ -91,11 +90,14 @@ const closeSidebar = () => {
     widgetStore.setSidebarVisible(false);
 };
 
-const addWidget = (widget) => {
+const addWidget = (widget: WidgetOption) => {
     const { viewType, id } = determineViewTypeAndId(route);
     if (viewType) {
         widgetStore.addWidgets([{
-            ...widget,
+            title: widget.title,
+            type: widget.type,
+            grid: widget.grid,
+            metadata: widget.metadata,
             id: widgetStore.getWidgetId(viewType),
         }], viewType, id as string);
     }

@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
-import { WidgetType, type Widget } from '@/types/widgets.types'
+import { WidgetType, type Widget, type WidgetPosition } from '@/types/widgets.types'
 import { useRunsStore } from './runs'
 import { useDateRangeStore } from './dateRange'
 import { useSingleRunStore } from './singleRun'
 import { useScenarioStore } from './scenario'
 import { defaultWidgets } from '@/constants/widget.const'
 import { ViewType } from '@/types/views.types'
+import type { GridStackNode } from 'gridstack'
 
 export const useWidgetStore = defineStore('widgets', {
   state: () => ({
@@ -120,6 +121,31 @@ export const useWidgetStore = defineStore('widgets', {
           widget.metadata.data = scenarioStore.getIterationsData(scenarioId)
           break
       }
+    },
+    updateWidgetsPos(updatedPositions: GridStackNode[] , viewType: ViewType) {
+      let widgets;
+      switch (viewType) {
+        case ViewType.RUNS:
+          widgets = this.runsWidgets;
+          break;
+        case ViewType.SINGLE_RUN:
+          widgets = this.singleRunWidgets;
+          break;
+        case ViewType.SCENARIO:
+          widgets = this.scenarioWidgets;
+          break;
+        default:
+          return;
+      }
+      updatedPositions.forEach(pos => {
+        const widget = widgets.find(w => w.id === pos.id);
+        if (widget) {
+          widget.grid.x = pos.x;
+          widget.grid.y = pos.y;
+          widget.grid.w = pos.w;
+          widget.grid.h = pos.h;
+        }
+      });
     },
     setSidebarVisible(visible: boolean) {
       this.sidebarVisible = visible

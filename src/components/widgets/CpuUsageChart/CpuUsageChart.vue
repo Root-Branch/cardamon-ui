@@ -1,19 +1,13 @@
 <template>
-    <div 
-        :id="data.id" 
-        :gs-id="data.id" 
-        :gs-x="data.grid.x" 
-        :gs-y="data.grid.y" 
-        :gs-w="data.grid.w" 
-        :gs-h="data.grid.h"
-        :gs-min-w="minWidth" 
-        :gs-min-h="minHeight"
-    >
-        <div class="cpu-usage-chart grid-stack-item-content p-6 rounded-lg drop-shadow-widget bg-white dark:bg-gray-800">
+    <div :id="data.id" :gs-id="data.id" :gs-x="data.grid.x" :gs-y="data.grid.y" :gs-w="data.grid.w" :gs-h="data.grid.h"
+        :gs-min-w="minWidth" :gs-min-h="minHeight">
+        <div
+            class="cpu-usage-chart grid-stack-item-content p-6 rounded-lg drop-shadow-widget bg-white dark:bg-gray-800">
             <!-- Header with title and actions -->
             <div class="cpu-usage-chart__header">
                 <h3 class="cpu-usage-chart__title">{{ data.title }}</h3>
-                <WidgetActions @duplicateWidget="duplicateWidget" @deleteWidget="deleteWidget" :dark-background="false" />
+                <WidgetActions @duplicateWidget="duplicateWidget" @deleteWidget="deleteWidget"
+                    :dark-background="darkMode" />
             </div>
             <!-- Average value display -->
             <div class="cpu-usage-chart__average-container">

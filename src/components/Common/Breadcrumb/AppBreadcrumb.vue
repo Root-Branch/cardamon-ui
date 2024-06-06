@@ -4,7 +4,11 @@
             <template #home-icon>
                 <font-awesome-icon :icon="['fas', 'clone']" class="breadcrumb__icon breadcrumb__item-text" />
             </template>
-            <span class="breadcrumb__item-text">Dashboard</span>
+            <div>
+                <router-link to="/dashboard" class="flex items-center">
+                    <span class="breadcrumb__item-text">Dashboard</span>
+                </router-link>
+            </div>
         </fwb-breadcrumb-item>
         <fwb-breadcrumb-item class="breadcrumb__item" v-if="runId">
             <span class="breadcrumb__item-text">Cardamon Run ID: {{ runId }}</span>
@@ -15,7 +19,7 @@
     </fwb-breadcrumb>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { FwbBreadcrumb, FwbBreadcrumbItem } from 'flowbite-vue';
 import { useRoute } from 'vue-router';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';

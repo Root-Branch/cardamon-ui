@@ -2,8 +2,8 @@
   <div 
     :id="data.id" 
     :gs-id="data.id" 
-    :gs-x="data.id" 
-    :gs-y="data.id" 
+    :gs-x="data.grid.x" 
+    :gs-y="data.grid.y" 
     :gs-w="data.grid.w" 
     :gs-h="data.grid.h"
     :gs-min-w="minWidth" 

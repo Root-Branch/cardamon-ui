@@ -5,7 +5,7 @@
       <!-- Header with title and actions -->
       <div class="dynamic-chart__header">
         <h3 class="dynamic-chart__title">{{ titleText }}</h3>
-        <WidgetActions @duplicateWidget="duplicateWidget" @deleteWidget="deleteWidget" :dark-background="false" />
+        <WidgetActions @duplicateWidget="duplicateWidget" @deleteWidget="deleteWidget" :dark-background="darkMode" />
       </div>
       <!-- Metric buttons and chart type selector -->
       <div class="dynamic-chart__controls">
@@ -152,7 +152,7 @@ const chartData = computed(() => ({
   ],
 }));
 
-const chartOptions = computed(() => ({
+const chartOptions: any = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {

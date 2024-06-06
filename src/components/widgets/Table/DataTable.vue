@@ -7,7 +7,7 @@
             <div class="data-table__header">
                 <h3 class="data-table__title">{{ data.title }}</h3>
                 <WidgetActions @duplicateWidget="duplicateWidget" @deleteWidget="deleteWidget"
-                    :dark-background="true" />
+                    :dark-background="darkMode" />
             </div>
             <!-- Table -->
             <div class="data-table__table-container">
@@ -27,7 +27,8 @@
                     </fwb-table-head>
                     <fwb-table-body>
                         <fwb-table-row v-for="(row, index) in sortedData" :key="row.id" class="data-table__table-row">
-                            <fwb-table-cell v-for="column in columns" :key="column.field" class="data-table__table-cell">
+                            <fwb-table-cell v-for="column in columns" :key="column.field"
+                                class="data-table__table-cell">
                                 <span v-if="column.field === 'id'">
                                     <a href="#" @click.prevent="goToId(row.id)" class="data-table__link">
                                         {{ row[column.field] }}
@@ -37,9 +38,10 @@
                                     {{ formatField(row, column.field) }}
                                 </span>
                                 <span
-                                    v-if="metricFields.includes(column.field) && getPercentageChange(index, column.field) !== ''"
+                                    v-if="metricFields.includes(column.field) && getPercentageChange(index, column.field) !== 0"
                                     class="data-table__change-container">
-                                    <span :class="getChangeClass(index, column.field)" class="data-table__change-text">
+                                    <span :class="getPercentageChangeClass(index, column.field)"
+                                        class="data-table__change-text">
                                         {{ getPercentageChange(index, column.field) }}%
                                         <font-awesome-icon v-if="getPercentageChange(index, column.field) > 0"
                                             class="ml-1" icon="arrow-up" />
@@ -71,6 +73,29 @@ import { FwbTable, FwbTableHead, FwbTableHeadCell, FwbTableBody, FwbTableRow, Fw
 import type { Widget } from '@/types/widgets.types';
 import type { MetaData } from '@/types/chart.types';
 import { useRouter, useRoute } from 'vue-router';
+import { useThemeStore } from '@/stores/theme';
+
+interface Column {
+    label: string;
+    field: string;
+}
+
+interface Metric {
+    metricType: string;
+    value: number;
+}
+
+interface DataRow {
+    [key: string]: any;
+    id: string;
+    startTime: string;
+    endTime: string;
+    metrics: Metric[];
+}
+
+const themeStore = useThemeStore();
+const darkMode = computed(() => themeStore.darkMode);
+console.log(darkMode);
 
 const minWidth = 3;
 const minHeight = 3;
@@ -79,13 +104,13 @@ const props = defineProps<{
     data: Widget<MetaData>;
 }>();
 
-const columns = ref([]);
-const currentPage = ref(1);
+const columns = ref<Column[]>([]);
+const currentPage = ref<number>(1);
 const itemsPerPage = 5;
-const sortField = ref('');
-const sortOrder = ref('desc');
+const sortField = ref<string>('');
+const sortOrder = ref<string>('desc');
 
-const metricFields = ref([]);
+const metricFields = ref<string[]>([]);
 
 const getColumns = (data: any[]): { label: string; field: string }[] => {
     if (!data.length) return [];
@@ -121,8 +146,8 @@ const sortedData = computed(() => {
             let fieldA, fieldB;
 
             if (['id', 'startTime', 'endTime'].includes(sortField.value)) {
-                fieldA = a[sortField.value];
-                fieldB = b[sortField.value];
+                fieldA = (a as any)[sortField.value];
+                fieldB = (b as any)[sortField.value];
             } else {
                 fieldA = a.metrics.find(m => m.metricType === sortField.value)?.value;
                 fieldB = b.metrics.find(m => m.metricType === sortField.value)?.value;
@@ -142,7 +167,7 @@ const sortedData = computed(() => {
 
 const totalPages = computed(() => Math.ceil(props.data.metadata.data.length / itemsPerPage));
 
-const formatField = (row, field) => {
+const formatField = (row: DataRow, field: string) => {
     if (field === 'startTime' || field === 'endTime') {
         return new Date(row[field]).toLocaleString();
     }
@@ -161,16 +186,16 @@ const goToId = async (id: string) => {
     }
 };
 
-const getChangeClass = (index, field) => {
+const getPercentageChangeClass = (index: number, field: string) => {
     const change = getPercentageChange(index, field);
     return change > 0 ? 'text-green-400' : change < 0 ? 'text-red-400' : 'text-gray-400';
 };
 
-const getPercentageChange = (index, field) => {
-    if (index === 0) return '';
-    const current = sortedData.value[index].metrics.find(m => m.metricType === field).value;
-    const previous = sortedData.value[index - 1].metrics.find(m => m.metricType === field).value;
-    return (((current - previous) / previous) * 100).toFixed(2);
+const getPercentageChange = (index: number, field: string): number => {
+    if (index === 0) return 0;
+    const current = sortedData.value[index].metrics.find(m => m.metricType === field)?.value || 0;
+    const previous = sortedData.value[index - 1].metrics.find(m => m.metricType === field)?.value || 0;
+    return Number((((current - previous) / previous) * 100).toFixed(2));
 };
 
 onMounted(() => {
