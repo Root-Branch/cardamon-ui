@@ -5,16 +5,11 @@ const router = createRouter({
   routes: [
     {
       path: '/dashboard',
-      name: 'MainDashboard',
-      component: () => import('../views/MainDashboard.vue')
+      name: 'HomeDashboard',
+      component: () => import('../views/HomeDashboard.vue')
     },
     {
-      path: '/runs/:runId',
-      name: 'RunDetail',
-      component: () => import('../views/RunDetail.vue')
-    },
-    {
-      path: '/scenarios/:scenarioId',
+      path: '/scenarios/:scenarioName',
       name: 'ScenarioDetail',
       component: () => import('../views/ScenarioDetail.vue')
     },

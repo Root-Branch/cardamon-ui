@@ -1,167 +1,122 @@
 import { defineStore } from 'pinia'
-import { WidgetType, type Widget, type WidgetPosition } from '@/types/widgets.types'
-import { useRunsStore } from './runs'
-import { useDateRangeStore } from './dateRange'
-import { useSingleRunStore } from './singleRun'
+import { WidgetType, type Widget } from '@/types/widgets.types'
 import { useScenarioStore } from './scenario'
 import { defaultWidgets } from '@/constants/widget.const'
-import { ViewType } from '@/types/views.types'
 import type { GridStackNode } from 'gridstack'
 
 export const useWidgetStore = defineStore('widgets', {
   state: () => ({
-    runsWidgets: [] as Widget[],
-    singleRunWidgets: [] as Widget[],
-    scenarioWidgets: [] as Widget[],
+    scenarioWidgets: {} as Record<string, Widget[]>,
     sidebarVisible: false
   }),
   actions: {
-    async addWidgets(widgets: Widget[], viewType: ViewType, id?: string | null) {
-      for (const widget of widgets) {
-        if (viewType === ViewType.RUNS) {
-          await this.updateRunsWidgetData(widget)
-          this.runsWidgets.push(widget)
-        } else if (viewType === ViewType.SINGLE_RUN && id) {
-          await this.updateSingleRunWidgetData(widget, id)
-          this.singleRunWidgets.push(widget)
-        } else if (viewType === ViewType.SCENARIO && id) {
-          await this.updateScenarioWidgetData(widget, id)
-          this.scenarioWidgets.push(widget)
-        }
+    async initializeWidgets(scenarioName: string) {
+      if (this.scenarioWidgets[scenarioName]?.length) {
+        const scenarioStore = useScenarioStore()
+        const scenarioDetails = await scenarioStore.getScenarioDetails(scenarioName)
+        await this.updateWidgetsData(scenarioName, scenarioDetails)
+        return
       }
-    },
-    async initializeWidgets(viewType: ViewType, id?: string) {
-      if (viewType === ViewType.RUNS && this.runsWidgets.length) return
-      if (viewType === ViewType.SINGLE_RUN && this.singleRunWidgets.length) return
-      if (viewType === ViewType.SCENARIO && this.scenarioWidgets.length) return
       const widgets = JSON.parse(JSON.stringify(defaultWidgets))
-      await this.addWidgets(widgets, viewType, id)
+      await this.addWidgets(scenarioName, widgets)
     },
-    async deleteWidget(widgetId: string, viewType: ViewType) {
-      if (viewType === ViewType.RUNS) {
-        this.runsWidgets = this.runsWidgets.filter((widget) => widget.id !== widgetId)
-      } else if (viewType === ViewType.SINGLE_RUN) {
-        this.singleRunWidgets = this.singleRunWidgets.filter((widget) => widget.id !== widgetId)
-      } else if (viewType === ViewType.SCENARIO) {
-        this.scenarioWidgets = this.scenarioWidgets.filter((widget) => widget.id !== widgetId)
-      }
+    async getAvgMetrics(scenarioDetails: any) {
+      return [
+        {
+          metricType: 'CO2',
+          value: scenarioDetails.scenario.avg_co2_emission
+        },
+        {
+          metricType: 'POWER',
+          value: scenarioDetails.scenario.avg_power_consumption
+        },
+        {
+          metricType: 'CPU',
+          value: scenarioDetails.scenario.avg_cpu_utilization
+        }
+      ]
     },
-    duplicateWidget(widget: Widget, viewType: ViewType, id?: string | null) {
-      const newWidget = JSON.parse(JSON.stringify(widget));
-      newWidget.id = this.getWidgetId(viewType);
-      this.addWidgets([newWidget], viewType, id);
-    },
-    async updateRunsWidgetData(widget: Widget) {
-      const runsStore = useRunsStore()
-      const dateRangeStore = useDateRangeStore()
-      const { startDate, endDate } = dateRangeStore
-
+    async updateWidgetMetadata(widget: Widget, scenarioDetails: any) {
       switch (widget.type) {
         case WidgetType.METRIC: {
-          const totalMetrics = runsStore.getTotalMetricsData(startDate, endDate)
+          const totalMetrics = await this.getAvgMetrics(scenarioDetails)
           widget.metadata.value =
             totalMetrics.find((metric: any) => metric.metricType === widget.metadata.key)?.value ||
             0
           break
         }
-        case WidgetType.CHART:
-          widget.metadata.data = runsStore.getRunsData(startDate, endDate)
-          widget.metadata.totals = runsStore.getTotalMetricsData(startDate, endDate)
-          break
-        case WidgetType.CPU_USAGE:
-          widget.metadata.data = runsStore.getCpuMetricsData(startDate, endDate)
-          break
-        case WidgetType.TABLE:
-          widget.metadata.data = runsStore.getRunsData(startDate, endDate)
-          break
-      }
-    },
-    async updateSingleRunWidgetData(widget: Widget, runId: string) {
-      const singleRunStore = useSingleRunStore()
-
-      switch (widget.type) {
-        case WidgetType.METRIC: {
-          const totalMetrics = singleRunStore.getTotalMetricsData(runId)
-          widget.metadata.value =
-            totalMetrics.find((metric: any) => metric.metricType === widget.metadata.key)?.value ||
-            0
+        case WidgetType.CHART: {
+          widget.metadata.runs = scenarioDetails.runs || []
+          widget.metadata.scenario = scenarioDetails.scenario || {}
           break
         }
-        case WidgetType.CHART:
-          widget.metadata.data = singleRunStore.getScenariosData(runId)
-          widget.metadata.totals = singleRunStore.getTotalMetricsData(runId)
+        case WidgetType.CPU_USAGE: {
+          widget.metadata.runs = scenarioDetails.runs || []
           break
-        case WidgetType.CPU_USAGE:
-          widget.metadata.data = singleRunStore.getCpuMetricsData(runId)
+        }
+        case WidgetType.TABLE: {
+          widget.metadata.runs = scenarioDetails.runs || []
+          widget.metadata.pagination = scenarioDetails.pagination || {}
           break
-        case WidgetType.TABLE:
-          widget.metadata.data = singleRunStore.getScenariosData(runId)
-          break
+        }
       }
     },
-    async updateScenarioWidgetData(widget: Widget, scenarioId: string) {
+    async addWidgets(scenarioName: string, widgets: Widget[]) {
       const scenarioStore = useScenarioStore()
-
-      switch (widget.type) {
-        case WidgetType.METRIC: {
-          const totalMetrics = scenarioStore.getTotalMetricsData(scenarioId)
-          widget.metadata.value =
-            totalMetrics.find((metric: any) => metric.metricType === widget.metadata.key)?.value ||
-            0
-          break
-        }
-        case WidgetType.CHART:
-          widget.metadata.data = scenarioStore.getIterationsData(scenarioId)
-          widget.metadata.totals = scenarioStore.getTotalMetricsData(scenarioId)
-          break
-        case WidgetType.CPU_USAGE:
-          widget.metadata.data = scenarioStore.getCpuMetricsData(scenarioId)
-          break
-        case WidgetType.TABLE:
-          widget.metadata.data = scenarioStore.getIterationsData(scenarioId)
-          break
+      const scenarioDetails = await scenarioStore.getScenarioDetails(scenarioName)
+      if (!this.scenarioWidgets[scenarioName]) {
+        this.scenarioWidgets[scenarioName] = []
+      }
+      for (const widget of widgets) {
+        await this.updateWidgetMetadata(widget, scenarioDetails)
+        this.scenarioWidgets[scenarioName].push(widget)
       }
     },
-    updateWidgetsPos(updatedPositions: GridStackNode[] , viewType: ViewType) {
-      let widgets;
-      switch (viewType) {
-        case ViewType.RUNS:
-          widgets = this.runsWidgets;
-          break;
-        case ViewType.SINGLE_RUN:
-          widgets = this.singleRunWidgets;
-          break;
-        case ViewType.SCENARIO:
-          widgets = this.scenarioWidgets;
-          break;
-        default:
-          return;
+    async updateWidgetsData(scenarioName: string, scenarioDetails: any) {
+      if (!this.scenarioWidgets[scenarioName]) return
+      for (const widget of this.scenarioWidgets[scenarioName]) {
+        await this.updateWidgetMetadata(widget, scenarioDetails)
       }
-      updatedPositions.forEach(pos => {
-        const widget = widgets.find(w => w.id === pos.id);
+    },
+    async deleteWidget(scenarioName: string, widgetId: string) {
+      if (this.scenarioWidgets[scenarioName]) {
+        this.scenarioWidgets[scenarioName] = this.scenarioWidgets[scenarioName].filter(
+          (widget) => widget.id !== widgetId
+        )
+      }
+    },
+    async duplicateWidget(scenarioName: string, widget: Widget) {
+      const newWidget = JSON.parse(JSON.stringify(widget))
+      newWidget.id = this.getWidgetId(scenarioName)
+      await this.addWidgets(scenarioName, [newWidget])
+    },
+    updateWidgetsPos(scenarioName: string, updatedPositions: GridStackNode[]) {
+      const widgets = this.scenarioWidgets[scenarioName]
+      if (!widgets) return
+      updatedPositions.forEach((pos) => {
+        const widget = widgets.find((w) => w.id === pos.id)
         if (widget) {
-          widget.grid.x = pos.x;
-          widget.grid.y = pos.y;
-          widget.grid.w = pos.w;
-          widget.grid.h = pos.h;
+          widget.grid.x = pos.x
+          widget.grid.y = pos.y
+          widget.grid.w = pos.w
+          widget.grid.h = pos.h
         }
-      });
+      })
     },
     setSidebarVisible(visible: boolean) {
       this.sidebarVisible = visible
     }
   },
   getters: {
-    getWidgetId: (state) => (viewType: ViewType) => {
-      let maxId = 0;
-      if (viewType === ViewType.RUNS) {
-        maxId = Math.max(...state.runsWidgets.map(widget => parseInt(widget.id, 10)), 0);
-      } else if (viewType === ViewType.SINGLE_RUN) {
-        maxId = Math.max(...state.singleRunWidgets.map(widget => parseInt(widget.id, 10)), 0);
-      } else if (viewType === ViewType.SCENARIO) {
-        maxId = Math.max(...state.scenarioWidgets.map(widget => parseInt(widget.id, 10)), 0);
+    getWidgetId: (state) => (scenarioName: string) => {
+      let maxId = 0
+      if (state.scenarioWidgets[scenarioName]) {
+        maxId = Math.max(
+          ...state.scenarioWidgets[scenarioName].map((widget) => parseInt(widget.id, 10)),
+          0
+        )
       }
-      return (maxId + 1).toString();
-    },
-  },
+      return (maxId + 1).toString()
+    }
+  }
 })

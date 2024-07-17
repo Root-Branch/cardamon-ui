@@ -1,15 +1,15 @@
 <template>
-  <div 
-    :id="data.id" 
-    :gs-id="data.id" 
-    :gs-x="data.grid.x" 
-    :gs-y="data.grid.y" 
-    :gs-w="data.grid.w" 
+  <div
+    :id="data.id"
+    :gs-id="data.id"
+    :gs-x="data.grid.x"
+    :gs-y="data.grid.y"
+    :gs-w="data.grid.w"
     :gs-h="data.grid.h"
-    :gs-min-w="minWidth" 
+    :gs-min-w="minWidth"
     :gs-min-h="minHeight"
   >
-    <div 
+    <div
       class="metric-card__container grid-stack-item-content grid-stack-item p-4 rounded-lg drop-shadow-widget cursor-move"
       :class="cardClass"
     >
@@ -21,43 +21,41 @@
         <span class="metric-card__unit">{{ data.metadata.unit }}</span>
       </div>
       <!-- Widget Actions -->
-      <WidgetActions @duplicateWidget="duplicateWidget" @deleteWidget="deleteWidget" :dark-background="true" />
+      <!-- <WidgetActions @duplicateWidget="duplicateWidget" @deleteWidget="deleteWidget" :dark-background="true" /> -->
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { defineProps, defineEmits } from 'vue';
-import { useWidgetActions } from '@/composables/useWidgetActions';
-import WidgetActions from '../WidgetActions.vue';
-import type { Widget } from '@/types/widgets.types';
+import { computed } from 'vue'
+import { defineProps } from 'vue'
+import type { Widget } from '@/types/widgets.types'
 
 interface MetaData {
-  value: number;
-  unit: string;
+  value: number
+  unit: string
 }
 
 const props = defineProps<{
-  data: Widget<MetaData>;
-}>();
+  data: Widget<MetaData>
+}>()
 
-const minWidth = 1;
-const minHeight = 2;
+const minWidth = 1
+const minHeight = 2
 
 const cardClass = computed(() => {
   if (props.data.metadata.value < 10) {
-    return 'metric-card--green';
+    return 'metric-card--green'
   } else if (props.data.metadata.value < 20) {
-    return 'metric-card--orange';
+    return 'metric-card--orange'
   } else {
-    return 'metric-card--red';
+    return 'metric-card--red'
   }
-});
+})
 
-const emit = defineEmits(['duplicate', 'delete']);
+// const emit = defineEmits(['duplicate', 'delete'])
 
-const { duplicateWidget, deleteWidget } = useWidgetActions(props, emit);
+// const { duplicateWidget, deleteWidget } = useWidgetActions(props, emit)
 </script>
 
 <style scoped>

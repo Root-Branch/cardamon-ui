@@ -25,6 +25,7 @@
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "axios": "^1.7.2",
     "chart.js": "^4.4.3",
+    "date-fns": "^3.6.0",
     "flowbite": "^2.3.0",
     "flowbite-vue": "^0.1.4",
     "gridstack": "^10.1.2",

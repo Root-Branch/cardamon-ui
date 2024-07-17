@@ -1,68 +1,61 @@
-import { getCpuMetrics } from '@/services/api/cpuMetrics/cpuMetricsApi'
-import type { CpuMetric } from '@/services/api/cpuMetrics/types'
-import { getMetrics } from '@/services/api/metrics/metricsApi'
-import type { Iteration, Metric } from '@/services/api/iterations/types'
-import { getIterations } from '@/services/api/iterations/iterationApi'
+import { getScenarios, getScenario } from '@/services/api/scenarios/scenariosApi'
+import type { ScenariosResponse, ScenarioResponse } from '@/services/api/scenarios/types'
 import { defineStore } from 'pinia'
 
-export const useScenarioStore = defineStore('scenario', {
+export const useScenarioStore = defineStore('scenarioStore', {
   state: () => ({
-    iterationsData: {} as Record<string, Iteration[]>,
-    totalMetricsData: {} as Record<string, Metric[]>,
-    cpuMetricsData: {} as Record<string, CpuMetric[]>,
+    scenariosData: {} as ScenariosResponse,
+    scenarioDetails: {} as Record<string, ScenarioResponse>,
     loading: false,
-    error: null as string | null,
-    fetchedScenarios: [] as string[]
+    error: null as string | null
   }),
   actions: {
-    async fetchIterations(scenarioId: string) {
-      if (this.fetchedScenarios.includes(scenarioId)) return
-
-      try {
-        const response = await getIterations(scenarioId)
-        this.iterationsData[scenarioId] = response.data
-        this.fetchedScenarios.push(scenarioId)
-      } catch (error) {
-        this.error = 'Failed to fetch iterations'
-      }
-    },
-    async fetchMetrics(scenarioId: string) {
-      const metricsKey = `${scenarioId}-total`
-      if (this.totalMetricsData[metricsKey]) return
-
+    async fetchScenarios(params?: {
+      fromDate?: number
+      toDate?: number
+      searchQuery?: string
+      page?: number
+      limit?: number
+    }) {
+      this.loading = true
       this.error = null
       try {
-        const response = await getMetrics({ scenarioId, type: 'TOTAL' })
-        this.totalMetricsData[metricsKey] = response.metrics
+        const response = await getScenarios(params)
+        this.scenariosData = response
       } catch (error) {
-        this.error = 'Failed to fetch metrics'
+        this.error = 'Failed to fetch scenarios'
+      } finally {
+        setTimeout(() => {
+          this.loading = false
+        }, 100)
       }
     },
-    async fetchCpuMetrics(scenarioId: string) {
-      const cpuMetricsKey = `${scenarioId}-cpu`
-      if (this.cpuMetricsData[cpuMetricsKey]) return
-
+    async fetchScenarioDetails(
+      scenarioName: string,
+      params?: {
+        page?: number
+        limit?: number
+      }
+    ) {
+      console.log('fetching scenario details', params)
+      this.loading = true
       this.error = null
       try {
-        const response = await getCpuMetrics({ scenarioId })
-        this.cpuMetricsData[cpuMetricsKey] = response.cpuMetrics
+        const response = await getScenario(scenarioName, params)
+        this.scenarioDetails[scenarioName] = response
       } catch (error) {
-        this.error = 'Failed to fetch CPU metrics'
+        this.error = `Failed to fetch details for scenario: ${scenarioName}`
+      } finally {
+        this.loading = false
       }
     }
   },
   getters: {
-    getIterationsData: (state) => (scenarioId: string) => {
-      return state.iterationsData[scenarioId] || null
+    getScenariosData: (state) => () => {
+      return state.scenariosData?.scenarios || null
     },
-    getTotalMetricsData: (state) => (scenarioId: string) => {
-      const metricsKey = `${scenarioId}-total`
-      return state.totalMetricsData[metricsKey] || null
-    },
-    getCpuMetricsData: (state) => (scenarioId: string) => {
-      const cpuMetricsKey = `${scenarioId}-cpu`
-      return state.cpuMetricsData[cpuMetricsKey] || null
+    getScenarioDetails: (state) => (scenarioName: string) => {
+      return state.scenarioDetails[scenarioName] || null
     }
-  },
-  persist: true
+  }
 })

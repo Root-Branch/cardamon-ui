@@ -1,7 +1,24 @@
 import baseApi from '../baseApi'
-import type { ScenariosResponse } from './types'
+import type { ScenariosResponse, ScenarioResponse } from './types'
 
-export const getScenarios = async (runId: string): Promise<ScenariosResponse> => {
-  const response = await baseApi.get<ScenariosResponse>(`/api/runs/${runId}`)
+export const getScenarios = async (params?: {
+  fromDate?: number
+  toDate?: number
+  searchQuery?: string
+  page?: number
+  limit?: number
+}): Promise<ScenariosResponse> => {
+  const response = await baseApi.get<ScenariosResponse>(`/api/scenarios`, { params })
+  return response.data
+}
+
+export const getScenario = async (
+  scenarioName: string,
+  params?: {
+    page?: number
+    limit?: number
+  }
+): Promise<ScenarioResponse> => {
+  const response = await baseApi.get<ScenarioResponse>(`/api/scenarios/${scenarioName}`, { params })
   return response.data
 }

@@ -4,37 +4,37 @@ import { getImageUrl } from '@/utils/image.utils'
 export const defaultWidgets = [
   {
     id: '1',
-    title: 'Total CO2 Emission',
+    title: 'Avg. CO2 Emission',
     type: WidgetType.METRIC,
     grid: { w: 1, h: 2, x: 0, y: 0 },
     metadata: { key: 'CO2', unit: 'kg' }
   },
   {
     id: '2',
-    title: 'Total Power Consumption',
+    title: 'Avg. Power Consumption',
     type: WidgetType.METRIC,
     grid: { w: 1, h: 2, x: 1, y: 0 },
     metadata: { key: 'POWER', unit: 'kWh' }
   },
   {
     id: '3',
-    title: 'Total CPU Utilization',
+    title: 'Avg. CPU Utilization',
     type: WidgetType.METRIC,
     grid: { w: 1, h: 2, x: 2, y: 0 },
     metadata: { key: 'CPU', unit: '%' }
   },
   {
     id: '4',
-    title: 'CO2 Emission Overview',
+    title: 'Dynamic Chart',
     type: WidgetType.CHART,
-    grid: { w: 4, h: 4, x: 0, y: 6 },
+    grid: { w: 3, h: 4, x: 0, y: 6 },
     metadata: { key: 'TOTAL' }
   },
   {
     id: '5',
     title: 'CPU Usage Breakdown by Processes',
     type: WidgetType.CPU_USAGE,
-    grid: { w: 2, h: 6, x: 4, y: 6 },
+    grid: { w: 3, h: 5, x: 4, y: 7 },
     metadata: { key: 'CPU' }
   },
   {

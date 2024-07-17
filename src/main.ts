@@ -26,7 +26,7 @@ pinia.use(piniaPluginPersistedstate)
 app.use(pinia)
 app.use(router)
 
-const themeStore = useThemeStore();
-themeStore.applyTheme();
+const themeStore = useThemeStore()
+themeStore.applyTheme()
 
 app.mount('#app')

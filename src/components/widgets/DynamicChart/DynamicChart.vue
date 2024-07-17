@@ -1,17 +1,33 @@
 <template>
-  <div :id="data.id" :gs-id="data.id" :gs-x="data.grid.x" :gs-y="data.grid.y" :gs-w="data.grid.w" :gs-h="data.grid.h"
-    :gs-min-w="minWidth" :gs-min-h="minHeight">
+  <div
+    :id="data.id"
+    :gs-id="data.id"
+    :gs-x="data.grid.x"
+    :gs-y="data.grid.y"
+    :gs-w="data.grid.w"
+    :gs-h="data.grid.h"
+    :gs-min-w="minWidth"
+    :gs-min-h="minHeight"
+  >
     <div class="grid-stack-item-content grid-stack-item dynamic-chart">
       <!-- Header with title and actions -->
       <div class="dynamic-chart__header">
         <h3 class="dynamic-chart__title">{{ titleText }}</h3>
-        <WidgetActions @duplicateWidget="duplicateWidget" @deleteWidget="deleteWidget" :dark-background="darkMode" />
+        <!-- <WidgetActions
+          @duplicateWidget="duplicateWidget"
+          @deleteWidget="deleteWidget"
+          :dark-background="darkMode"
+        /> -->
       </div>
       <!-- Metric buttons and chart type selector -->
       <div class="dynamic-chart__controls">
         <div class="dynamic-chart__metrics">
-          <button v-for="metric in metrics" :key="metric" @click="selectMetric(metric)"
-            :class="['dynamic-chart__metric-button', { active: selectedMetric === metric }]">
+          <button
+            v-for="metric in metrics"
+            :key="metric"
+            @click="selectMetric(metric)"
+            :class="['dynamic-chart__metric-button', { active: selectedMetric === metric }]"
+          >
             {{ metric }}
           </button>
         </div>
@@ -23,19 +39,31 @@
             </button>
           </template>
           <div class="dynamic-chart__dropdown-menu">
-            <button @click="() => changeChartType(ChartType.LINE)" class="dynamic-chart__dropdown-item">Line
-              Chart</button>
-            <button @click="() => changeChartType(ChartType.BAR)" class="dynamic-chart__dropdown-item">Bar
-              Chart</button>
-            <button @click="() => changeChartType(ChartType.PIE)" class="dynamic-chart__dropdown-item">Pie
-              Chart</button>
+            <button
+              @click="() => changeChartType(ChartType.LINE)"
+              class="dynamic-chart__dropdown-item"
+            >
+              Line Chart
+            </button>
+            <button
+              @click="() => changeChartType(ChartType.BAR)"
+              class="dynamic-chart__dropdown-item"
+            >
+              Bar Chart
+            </button>
+            <button
+              @click="() => changeChartType(ChartType.PIE)"
+              class="dynamic-chart__dropdown-item"
+            >
+              Pie Chart
+            </button>
           </div>
         </fwb-dropdown>
       </div>
       <!-- Total value display -->
       <div class="dynamic-chart__total">
-        <div class="dynamic-chart__total-title">TOTAL {{ selectedMetric.replace('_', ' ') }}</div>
-        <div class="dynamic-chart__total-value">{{ totalValue }} {{ unit }}</div>
+        <div class="dynamic-chart__total-title">AVG. {{ selectedMetric.replace('_', ' ') }}</div>
+        <div class="dynamic-chart__total-value">{{ avgValue }} {{ unit }}</div>
       </div>
       <!-- Chart canvas -->
       <div class="dynamic-chart__chart-container">
@@ -46,111 +74,134 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { defineProps, defineEmits } from 'vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { FwbDropdown } from 'flowbite-vue';
-import WidgetActions from '../WidgetActions.vue';
-import { useWidgetActions } from '@/composables/useWidgetActions';
-import type { Widget } from '@/types/widgets.types';
-import LineChart from '../Charts/LineChart.vue';
-import BarChart from '../Charts/BarChart.vue';
-import PieChart from '../Charts/PieChart.vue';
-import { ChartType, MetricType, type MetaData } from '@/types/chart.types';
-import { chartBackgroundColor, chartBorderColor, darkModeChartBackgroundColor, darkModeChartBorderColor } from '@/constants/chart.const';
-import { useThemeStore } from '@/stores/theme';
+import { ref, computed } from 'vue'
+import { defineProps } from 'vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { FwbDropdown } from 'flowbite-vue'
+import type { Widget } from '@/types/widgets.types'
+import LineChart from '../Charts/LineChart.vue'
+import BarChart from '../Charts/BarChart.vue'
+import PieChart from '../Charts/PieChart.vue'
+import { ChartType, MetricType, type MetaData } from '@/types/chart.types'
+import {
+  chartBackgroundColor,
+  chartBorderColor,
+  darkModeChartBackgroundColor,
+  darkModeChartBorderColor
+} from '@/constants/chart.const'
+import { useThemeStore } from '@/stores/theme'
 
-const minWidth = 3;
-const minHeight = 5;
+const minWidth = 3
+const minHeight = 5
 
 const props = defineProps<{
-  data: Widget<MetaData>;
-}>();
+  data: Widget<MetaData>
+}>()
 
-const selectedMetric = ref<MetricType>(MetricType.POWER);
-const chartType = ref<ChartType>(ChartType.LINE);
+const selectedMetric = ref<MetricType>(MetricType.POWER)
+const chartType = ref<ChartType>(ChartType.LINE)
 
-const metrics = Object.values(MetricType);
+const metrics = Object.values(MetricType)
 
-const totalValue = computed(() => {
-  const total = props.data.metadata.totals.find(t => t.metricType === selectedMetric.value)?.value || 0;
-  return total.toFixed(2);
-});
+const avgValue = computed(() => {
+  switch (selectedMetric.value) {
+    case MetricType.CO2:
+      return props.data.metadata.scenario.avg_co2_emission
+    case MetricType.POWER:
+      return props.data.metadata.scenario.avg_power_consumption
+    default:
+      return 0
+  }
+})
 
 const unit = computed(() => {
   switch (selectedMetric.value) {
     case MetricType.CO2:
-      return 'kg';
+      return 'kg'
     case MetricType.POWER:
-      return 'kWh';
-    case MetricType.CPU:
-      return '%';
+      return 'kWh'
     default:
-      return '';
+      return ''
   }
-});
+})
 
 const titleText = computed(() => {
   switch (selectedMetric.value) {
     case MetricType.CO2:
-      return 'CO2 Emissions';
+      return 'Average CO2 Emissions'
     case MetricType.POWER:
-      return 'Power Consumption';
+      return 'Average Power Consumption'
     case MetricType.CPU:
-      return 'CPU Usage';
+      return 'CPU Usage'
     default:
-      return 'Metric';
+      return 'Metric'
   }
-});
+})
 
 const ChartComponent = computed(() => {
   switch (chartType.value) {
     case ChartType.LINE:
-      return LineChart;
+      return LineChart
     case ChartType.BAR:
-      return BarChart;
+      return BarChart
     case ChartType.PIE:
-      return PieChart;
+      return PieChart
     default:
-      return LineChart;
+      return LineChart
   }
-});
+})
 
 const chartTypeText = computed(() => {
   switch (chartType.value) {
     case ChartType.LINE:
-      return 'Line Chart';
+      return 'Line Chart'
     case ChartType.BAR:
-      return 'Bar Chart';
+      return 'Bar Chart'
     case ChartType.PIE:
-      return 'Pie Chart';
+      return 'Pie Chart'
     default:
-      return 'Chart';
+      return 'Chart'
   }
-});
+})
 
-const themeStore = useThemeStore();
-const darkMode = computed(() => themeStore.darkMode);
+const themeStore = useThemeStore()
+const darkMode = computed(() => themeStore.darkMode)
 
 const chartData = computed(() => ({
-  labels: props.data.metadata.data.map(d => new Date(d.startTime).toLocaleDateString()),
+  labels: props.data.metadata.runs.map((d) => new Date(d.start_time * 1000).toLocaleDateString()),
   datasets: [
     {
       label: selectedMetric.value,
-      data: props.data.metadata.data.map(d => {
-        const metric = d.metrics.find(m => m.metricType === selectedMetric.value);
-        return metric ? metric.value : 0;
+      data: props.data.metadata.runs.map((d) => {
+        switch (selectedMetric.value) {
+          case MetricType.CO2:
+            return d.co2_emission
+          case MetricType.POWER:
+            return d.power_consumption
+          default:
+            return 0
+        }
       }),
-      backgroundColor: chartType.value === ChartType.PIE
-        ? (darkMode.value ? darkModeChartBackgroundColor : chartBackgroundColor)
-        : (darkMode.value ? darkModeChartBackgroundColor[0] : chartBackgroundColor[0]),
-      borderColor: chartType.value === ChartType.PIE
-        ? (darkMode.value ? darkModeChartBorderColor : chartBorderColor)
-        : (darkMode.value ? darkModeChartBorderColor[0] : chartBorderColor[0]),
-      borderWidth: 1,
-    },
-  ],
-}));
+      backgroundColor:
+        chartType.value === ChartType.PIE
+          ? darkMode.value
+            ? darkModeChartBackgroundColor
+            : chartBackgroundColor
+          : darkMode.value
+            ? darkModeChartBackgroundColor[0]
+            : chartBackgroundColor[0],
+      borderColor:
+        chartType.value === ChartType.PIE
+          ? darkMode.value
+            ? darkModeChartBorderColor
+            : chartBorderColor
+          : darkMode.value
+            ? darkModeChartBorderColor[0]
+            : chartBorderColor[0],
+      borderWidth: 1
+    }
+  ]
+}))
 
 const chartOptions: any = computed(() => ({
   responsive: true,
@@ -160,58 +211,58 @@ const chartOptions: any = computed(() => ({
       enabled: true,
       backgroundColor: darkMode.value ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
       titleColor: darkMode.value ? 'black' : 'white',
-      bodyColor: darkMode.value ? 'black' : 'white',
+      bodyColor: darkMode.value ? 'black' : 'white'
     },
     legend: {
       display: true,
       position: 'bottom',
       labels: {
-        color: darkMode.value ? 'white' : 'black',
-      },
-    },
+        color: darkMode.value ? 'white' : 'black'
+      }
+    }
   },
   scales: {
     x: {
       ticks: {
-        color: darkMode.value ? 'white' : 'black',
+        color: darkMode.value ? 'white' : 'black'
       },
       grid: {
-        color: darkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-      },
+        color: darkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+      }
     },
     y: {
       ticks: {
-        color: darkMode.value ? 'white' : 'black',
+        color: darkMode.value ? 'white' : 'black'
       },
       grid: {
-        color: darkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-      },
-    },
+        color: darkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+      }
+    }
   },
   interaction: {
     mode: 'nearest',
     axis: 'x',
-    intersect: false,
-  },
-}));
+    intersect: false
+  }
+}))
 
 // Change chart type and selected metric
 const changeChartType = (type: ChartType) => {
-  chartType.value = type;
-};
+  chartType.value = type
+}
 
 const selectMetric = (metric: MetricType) => {
-  selectedMetric.value = metric;
-};
+  selectedMetric.value = metric
+}
 
-const emit = defineEmits(['duplicate', 'delete']);
+// const emit = defineEmits(['duplicate', 'delete'])
 
-const { duplicateWidget, deleteWidget } = useWidgetActions(props, emit);
+// const { duplicateWidget, deleteWidget } = useWidgetActions(props, emit)
 </script>
 
 <style scoped>
 .dynamic-chart {
-  @apply p-6 rounded-lg drop-shadow-widget bg-white dark:bg-gray-800 dark:text-gray-200
+  @apply p-6 rounded-lg drop-shadow-widget bg-white dark:bg-gray-800 dark:text-gray-200 cursor-move;
 }
 
 .dynamic-chart__header {
@@ -231,7 +282,7 @@ const { duplicateWidget, deleteWidget } = useWidgetActions(props, emit);
 }
 
 .dynamic-chart__metric-button {
-  @apply bg-gray-400 text-white px-6 py-2 rounded-full text-xs font-light;
+  @apply bg-gray-400 text-white px-6 py-2 rounded-xl text-xs font-light;
 }
 
 .dynamic-chart__metric-button.active {
@@ -243,7 +294,7 @@ const { duplicateWidget, deleteWidget } = useWidgetActions(props, emit);
 }
 
 .dynamic-chart__chart-type-button {
-  @apply text-gray-500 flex justify-between items-center rounded-full px-6 py-2 border border-gray-300 text-sm dark:text-white dark:border-gray-600;
+  @apply text-gray-500 flex justify-between items-center rounded-xl px-6 py-2 border border-gray-300 text-sm dark:text-white dark:border-gray-600;
 }
 
 .dynamic-chart__dropdown-menu {
@@ -267,6 +318,6 @@ const { duplicateWidget, deleteWidget } = useWidgetActions(props, emit);
 }
 
 .dynamic-chart__chart-container {
-  @apply mt-4;
+  @apply mt-4 cursor-pointer;
 }
-</style>, darkModeChartBackgroundColor, darkModeChartBorderColor
+</style>

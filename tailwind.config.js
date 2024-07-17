@@ -16,7 +16,7 @@ export default {
         'chart-value': '#0B1354'
       },
       dropShadow: {
-        widget: '0 4px 4px rgba(0, 0, 0, 0.25)'
+        widget: '0 0px 4px rgba(0,0,0,.1)'
       }
     }
   },
