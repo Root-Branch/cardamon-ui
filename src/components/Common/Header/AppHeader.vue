@@ -2,7 +2,8 @@
   <header class="app-header">
     <div class="app-header__container">
       <div class="app-header__logo-section">
-        <img src="/logo.svg" alt="Logo" class="app-header__logo-image" />
+        <img src="/logo-dark.svg" alt="Logo" class="app-header__logo-image block dark:hidden" />
+        <img src="/logo-light.svg" alt="Logo" class="app-header__logo-image hidden dark:block" />
       </div>
 
       <div class="app-header__right-section">

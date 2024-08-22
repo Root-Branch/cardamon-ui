@@ -12,12 +12,9 @@
     <div class="grid-stack-item-content grid-stack-item dynamic-chart">
       <!-- Header with title and actions -->
       <div class="dynamic-chart__header">
-        <h3 class="dynamic-chart__title">{{ titleText }}</h3>
-        <!-- <WidgetActions
-          @duplicateWidget="duplicateWidget"
-          @deleteWidget="deleteWidget"
-          :dark-background="darkMode"
-        /> -->
+        <h3 class="dynamic-chart__title">
+          CO2 Emission and Power Consumption for Run ID: {{ widgetStore.currentRunId }}
+        </h3>
       </div>
       <!-- Metric buttons and chart type selector -->
       <div class="dynamic-chart__controls">
@@ -62,8 +59,8 @@
       </div>
       <!-- Total value display -->
       <div class="dynamic-chart__total">
-        <div class="dynamic-chart__total-title">AVG. {{ selectedMetric.replace('_', ' ') }}</div>
-        <div class="dynamic-chart__total-value">{{ avgValue }} {{ unit }}</div>
+        <div class="dynamic-chart__total-title">TOTAL {{ selectedMetric.replace('_', ' ') }}</div>
+        <div class="dynamic-chart__total-value">{{ totalValue }} {{ unit }}</div>
       </div>
       <!-- Chart canvas -->
       <div class="dynamic-chart__chart-container">
@@ -78,6 +75,7 @@ import { ref, computed } from 'vue'
 import { defineProps } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { FwbDropdown } from 'flowbite-vue'
+import { useWidgetStore } from '@/stores/widgets'
 import type { Widget } from '@/types/widgets.types'
 import LineChart from '../Charts/LineChart.vue'
 import BarChart from '../Charts/BarChart.vue'
@@ -98,20 +96,40 @@ const props = defineProps<{
   data: Widget<MetaData>
 }>()
 
-const selectedMetric = ref<MetricType>(MetricType.POWER)
-const chartType = ref<ChartType>(ChartType.LINE)
+const widgetStore = useWidgetStore()
+
+const selectedMetric = ref<MetricType>(MetricType.CO2)
+const chartType = ref<ChartType>(ChartType.BAR)
 
 const metrics = Object.values(MetricType)
 
-const avgValue = computed(() => {
-  switch (selectedMetric.value) {
-    case MetricType.CO2:
-      return props.data.metadata.scenario.avg_co2_emission
-    case MetricType.POWER:
-      return props.data.metadata.scenario.avg_power_consumption
-    default:
-      return 0
+// Mock function to generate random data
+const generateMockData = (min: number, max: number) => {
+  return Math.random() * (max - min) + min
+}
+
+const currentRun = computed(() => {
+  return (
+    props.data.metadata.runs.find((run) => run.run_id === widgetStore.currentRunId) || {
+      iterations: []
+    }
+  )
+})
+
+const totalValue = computed(() => {
+  const iterations = currentRun.value.iterations
+  let total = 0
+  for (const iteration of iterations) {
+    switch (selectedMetric.value) {
+      case MetricType.CO2:
+        total += generateMockData(0.1, 1) // Mock CO2 emission data (0.1 to 1 kg)
+        break
+      case MetricType.POWER:
+        total += generateMockData(1, 10) // Mock power consumption data (1 to 10 kWh)
+        break
+    }
   }
+  return total.toFixed(2)
 })
 
 const unit = computed(() => {
@@ -128,11 +146,9 @@ const unit = computed(() => {
 const titleText = computed(() => {
   switch (selectedMetric.value) {
     case MetricType.CO2:
-      return 'Average CO2 Emissions'
+      return 'Total CO2 Emissions'
     case MetricType.POWER:
-      return 'Average Power Consumption'
-    case MetricType.CPU:
-      return 'CPU Usage'
+      return 'Total Power Consumption'
     default:
       return 'Metric'
   }
@@ -168,16 +184,16 @@ const themeStore = useThemeStore()
 const darkMode = computed(() => themeStore.darkMode)
 
 const chartData = computed(() => ({
-  labels: props.data.metadata.runs.map((d) => new Date(d.start_time * 1000).toLocaleDateString()),
+  labels: currentRun.value.iterations.map((iteration) => `Iteration ${iteration.iteration}`),
   datasets: [
     {
       label: selectedMetric.value,
-      data: props.data.metadata.runs.map((d) => {
+      data: currentRun.value.iterations.map(() => {
         switch (selectedMetric.value) {
           case MetricType.CO2:
-            return d.co2_emission
+            return generateMockData(0.1, 1) // Mock CO2 emission data (0.1 to 1 kg)
           case MetricType.POWER:
-            return d.power_consumption
+            return generateMockData(1, 10) // Mock power consumption data (1 to 10 kWh)
           default:
             return 0
         }
@@ -254,10 +270,6 @@ const changeChartType = (type: ChartType) => {
 const selectMetric = (metric: MetricType) => {
   selectedMetric.value = metric
 }
-
-// const emit = defineEmits(['duplicate', 'delete'])
-
-// const { duplicateWidget, deleteWidget } = useWidgetActions(props, emit)
 </script>
 
 <style scoped>

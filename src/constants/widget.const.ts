@@ -25,24 +25,24 @@ export const defaultWidgets = [
   },
   {
     id: '4',
-    title: 'Dynamic Chart',
-    type: WidgetType.CHART,
-    grid: { w: 3, h: 4, x: 0, y: 6 },
-    metadata: { key: 'TOTAL' }
+    title: 'Data Table',
+    type: WidgetType.TABLE,
+    grid: { w: 6, h: 5, x: 0, y: 2 },
+    metadata: { key: 'RUNS' }
   },
   {
     id: '5',
-    title: 'CPU Usage Breakdown by Processes',
-    type: WidgetType.CPU_USAGE,
-    grid: { w: 3, h: 5, x: 4, y: 7 },
-    metadata: { key: 'CPU' }
+    title: 'Dynamic Chart',
+    type: WidgetType.CHART,
+    grid: { w: 3, h: 5, x: 0, y: 7 },
+    metadata: { key: 'TOTAL' }
   },
   {
     id: '6',
-    title: 'Data Table',
-    type: WidgetType.TABLE,
-    grid: { w: 6, h: 4, x: 0, y: 2 },
-    metadata: { key: 'RUNS' }
+    title: 'CPU Usage Timeline',
+    type: WidgetType.CPU_USAGE,
+    grid: { w: 3, h: 5, x: 3, y: 7 },
+    metadata: { key: 'CPU' }
   }
 ]
 
@@ -64,7 +64,7 @@ export const availableWidgets = [
     metadata: { key: 'RUNS' }
   },
   {
-    title: 'CPU Usage Breakdown by Processes',
+    title: 'CPU Usage Timeline',
     description: 'Visualize CPU usage metrics in a pie chart format.',
     image: getImageUrl('cpu-widget', 'svg'),
     type: WidgetType.CPU_USAGE,

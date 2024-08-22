@@ -27,20 +27,20 @@
                 item.name
               }}</a>
             </fwb-table-cell>
+            <fwb-table-cell class="data-table__table-cell"
+              >{{ item.avgCo2Emission }} kg</fwb-table-cell
+            >
+            <fwb-table-cell class="data-table__table-cell"
+              >{{ item.last5AvgCpu.toFixed(2) }} %</fwb-table-cell
+            >
+            <fwb-table-cell class="data-table__table-cell"
+              >{{ item.avgPowerConsumption }} KWh</fwb-table-cell
+            >
             <fwb-table-cell class="data-table__table-cell">{{
-              item.avg_co2_emission
-            }}</fwb-table-cell>
-            <fwb-table-cell class="data-table__table-cell">{{
-              item.avg_cpu_utilization
-            }}</fwb-table-cell>
-            <fwb-table-cell class="data-table__table-cell">{{
-              item.avg_power_consumption
-            }}</fwb-table-cell>
-            <fwb-table-cell class="data-table__table-cell">{{
-              formatLastExecution(item.last_start_time)
+              formatLastExecution(item.lastStartTime)
             }}</fwb-table-cell>
             <fwb-table-cell class="data-table__table-cell fixed-width">
-              <Sparkline :data="item.co2_emission_trend" />
+              <Sparkline :data="item.co2EmissionTrend" />
             </fwb-table-cell>
           </fwb-table-row>
         </fwb-table-body>
@@ -121,7 +121,7 @@ watch(
 )
 
 const formatLastExecution = (timestamp: number) => {
-  const date = new Date(timestamp * 1000)
+  const date = new Date(timestamp)
   const now = new Date()
 
   const minutesDiff = (now.getTime() - date.getTime()) / 60000

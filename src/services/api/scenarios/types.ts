@@ -1,49 +1,56 @@
-export interface Scenario {
-  name: string
-  avg_co2_emission: number
-  avg_cpu_utilization: number
-  avg_power_consumption: number
-  last_start_time: number
-  co2_emission_trend: number[]
-}
+/* 
+Endpoint: GET /api/scenarios
+Query Parameters:
+* fromDate (optional) - default to 0 
+* toDate (optional) - default to current time 
+* searchQuery (optional) - default to "all" 
+* page (optional): The page number to retrieve. - default to 1 
+* limit (optional): The number of scenarios per page. - default to 5 
+*/
 
 export interface Run {
   run_id: string
+  iterations: Iteration[]
+}
+
+export interface Iteration {
+  run_id: string
+  scenario_name: string
   iteration: number
   start_time: number
-  end_time: number
-  co2_emission: number
-  power_consumption: number
-  cpu_utilization: {
-    [process_name: string]: Array<{
-      cpu_usage: number
-      timestamp: number
-    }>
-  }
+  stop_time: number
+  usage: {
+    cpuUsage: number
+    timestamp: number
+  }[]
+}
+
+export interface Scenario {
+  name: string
+  avgCo2Emission: number
+  last5AvgCpu: number
+  avgPowerConsumption: number
+  lastStartTime: number
+  co2EmissionTrend: number[]
+  runs: Run[]
 }
 
 export interface ScenariosResponse {
   scenarios: Scenario[]
   pagination: {
-    current_page: number
-    total_pages: number
-    per_page: number
-    total_scenarios: number
+    currentPage: number
+    totalPages: number
+    perPage: number
+    totalScenarios: number
   }
 }
 
 export interface ScenarioResponse {
-  scenario: {
-    name: string
-    avg_co2_emission: number
-    avg_power_consumption: number
-    avg_cpu_utilization: number
-  }
-  runs: Run[]
+  scenario: Scenario
   pagination: {
-    current_page: number
-    total_pages: number
-    per_page: number
-    total_runs: number
+    currentPage: number
+    totalPages: number
+    perPage: number
+    totalScenarios: number
   }
 }

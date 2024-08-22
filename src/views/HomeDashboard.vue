@@ -10,7 +10,7 @@
       </div>
       <div class="dashboard__filters">
         <div class="dashboard__filters-group">
-          <div class="dashboard__filters-input-container dashboard__filters-search-input">
+          <!-- <div class="dashboard__filters-input-container dashboard__filters-search-input">
             <input
               type="text"
               v-model="searchQuery"
@@ -19,9 +19,10 @@
               @input="debouncedSearch"
             />
             <font-awesome-icon icon="fa-solid fa-search" class="input-icon" />
-          </div>
+          </div> -->
           <div class="dashboard__filters-input-container dashboard__filters-date-input">
             <select v-model="dateFilter" @change="handleDateFilterChange" class="input-with-icon">
+              <option value="all">All time</option>
               <option value="5m">Last 5 minutes</option>
               <option value="30m">Last 30 minutes</option>
               <option value="1d">Last 1 day</option>
@@ -60,38 +61,41 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import ListTable from '@/components/Widgets/Table/ListTable.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useScenarioStore } from '@/stores/scenario'
-import { debounce } from '@/utils/debounce.utils'
+// import { debounce } from '@/utils/debounce.utils'
 
 const store = useScenarioStore()
 
 const searchQuery = ref('')
-const dateFilter = ref('5m')
+const dateFilter = ref('all')
 const fromDate = ref('')
 const toDate = ref('')
 
 const loading = computed(() => store.loading)
 const scenarios = computed(() => store.scenariosData?.scenarios || [])
-const totalPages = computed(() => store.scenariosData?.pagination?.total_pages || 1)
+const totalPages = computed(() => store.scenariosData?.pagination?.totalPages || 1)
 const currentPage = ref(1)
-const totalScenarios = computed(() => store.scenariosData?.pagination?.total_scenarios || 0)
+const totalScenarios = computed(() => store.scenariosData?.pagination?.totalScenarios || 0)
 
-const fetchScenarios = async (params = {}) => {
+const fetchScenarios = async (params: { page?: number } = {}) => {
   if (params.page === undefined) {
     currentPage.value = 1
   }
   await store.fetchScenarios({ ...params, page: currentPage.value })
 }
 
-const debouncedSearch = debounce(async () => {
-  currentPage.value = 1
-  await fetchScenarios({
-    searchQuery: searchQuery.value ? searchQuery.value : undefined,
-    fromDate: fromDate.value ? new Date(fromDate.value).getTime() : 0,
-    toDate: toDate.value ? new Date(toDate.value).getTime() : Date.now()
-  })
-}, 500)
+// const debouncedSearch = debounce(async () => {
+//   currentPage.value = 1
+//   await fetchScenarios({
+//     searchQuery: searchQuery.value ? searchQuery.value : undefined,
+//     fromDate: fromDate.value ? new Date(fromDate.value).getTime() : 0,
+//     toDate: toDate.value ? new Date(toDate.value).getTime() : Date.now()
+//   })
+// }, 500)
 
 const handleDateFilterChange = async () => {
+  if (dateFilter.value === 'all') {
+    await fetchScenarios()
+  }
   if (dateFilter.value === 'custom') return
   currentPage.value = 1
   applyDateFilter()
@@ -99,36 +103,31 @@ const handleDateFilterChange = async () => {
 
 const applyDateFilter = async () => {
   const now = new Date()
+  toDate.value = now.toISOString().split('T')[0]
   switch (dateFilter.value) {
     case '5m':
-      fromDate.value = new Date(now.getTime() - 5 * 60000)
-      toDate.value = now
+      fromDate.value = new Date(now.getTime() - 5 * 60000).toISOString().split('T')[0]
       break
     case '30m':
-      fromDate.value = new Date(now.getTime() - 30 * 60000)
-      toDate.value = now
+      fromDate.value = new Date(now.getTime() - 30 * 60000).toISOString().split('T')[0]
       break
     case '1d':
-      fromDate.value = new Date(now.getTime() - 24 * 60 * 60000)
-      toDate.value = now
+      fromDate.value = new Date(now.getTime() - 24 * 60 * 60000).toISOString().split('T')[0]
       break
     case '1w':
-      fromDate.value = new Date(now.getTime() - 7 * 24 * 60 * 60000)
-      toDate.value = now
+      fromDate.value = new Date(now.getTime() - 7 * 24 * 60 * 60000).toISOString().split('T')[0]
       break
     case '1m':
-      fromDate.value = new Date(now.getTime() - 30 * 24 * 60 * 60000)
-      toDate.value = now
+      fromDate.value = new Date(now.getTime() - 30 * 24 * 60 * 60000).toISOString().split('T')[0]
       break
     default:
       fromDate.value = ''
-      toDate.value = now
   }
 
   await fetchScenarios({
     fromDate: new Date(fromDate.value).getTime(),
-    toDate: new Date(toDate.value).getTime(),
-    searchQuery: searchQuery.value ? searchQuery.value : undefined
+    toDate: new Date(toDate.value).getTime()
+    // searchQuery: searchQuery.value ? searchQuery.value : undefined
   })
 }
 

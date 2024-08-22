@@ -112,10 +112,10 @@ const onChange = (event: Event, items: Array<GridStackNode>) => {
 }
 
 const handlePageChange = async (page: number) => {
-  await scenarioStore.fetchScenarioDetails(scenarioName as string, { page, limit: 5 })
+  await scenarioStore.fetchScenarioDetails(scenarioName as string, { page })
   await widgetStore.updateWidgetsData(
     scenarioName as string,
-    scenarioStore.scenarioDetails[scenarioName]
+    scenarioStore.scenarioDetails[scenarioName as string]
   )
 }
 
@@ -131,7 +131,7 @@ watch(
 )
 
 watch(
-  () => widgetStore.scenarioWidgets[scenarioName],
+  () => widgetStore.scenarioWidgets[scenarioName as string],
   (newWidgets) => {
     widgets.value = newWidgets || []
   }

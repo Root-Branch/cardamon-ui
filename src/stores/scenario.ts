@@ -37,7 +37,6 @@ export const useScenarioStore = defineStore('scenarioStore', {
         limit?: number
       }
     ) {
-      console.log('fetching scenario details', params)
       this.loading = true
       this.error = null
       try {

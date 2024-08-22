@@ -1,7 +1,6 @@
 import baseApi from '../baseApi'
-import type { DatabaseEndpointResponse } from './types'
 
-export const getDatabaseEndpoint = async (): Promise<DatabaseEndpointResponse> => {
-  const response = await baseApi.get<DatabaseEndpointResponse>(`/api/database_endpoint`)
+export const getDatabaseEndpoint = async (): Promise<string> => {
+  const response = await baseApi.get<string>(`/api/database_url`)
   return response.data
 }
