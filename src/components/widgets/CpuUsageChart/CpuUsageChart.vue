@@ -12,12 +12,14 @@
     <div class="cpu-usage grid-stack-item-content grid-stack-item">
       <!-- Header with title and actions -->
       <div class="cpu-usage__header">
-        <h3 class="cpu-usage__title">{{ data.title }}</h3>
+        <h3 class="cpu-usage__title">
+          CPU Usage Timeline for Run ID: {{ widgetStore.currentRunId }}
+        </h3>
       </div>
-      <!-- Selectors for run, iteration, and processes -->
+      <!-- Selector for run and iteration -->
       <div class="cpu-usage__selectors">
-        <div class="cpu-usage__selector-container w-1/3">
-          <label for="run-iteration-select" class="cpu-usage__label">Run ID - Iteration</label>
+        <div class="cpu-usage__selector-container">
+          <label for="run-iteration-select" class="cpu-usage__label">Iteration</label>
           <select
             id="run-iteration-select"
             v-model="selectedRunIteration"
@@ -25,25 +27,11 @@
             class="cpu-usage__select"
           >
             <option
-              v-for="run in data.metadata.runs"
-              :key="`${run.run_id}-${run.iteration}`"
-              :value="`${run.run_id}-${run.iteration}`"
+              v-for="run in filteredRunIterations"
+              :key="`${run.runId}-${run.iteration}`"
+              :value="`${run.runId}-${run.iteration}`"
             >
-              {{ run.run_id }} - {{ run.iteration }}
-            </option>
-          </select>
-        </div>
-        <div class="cpu-usage__selector-container w-1/3">
-          <label for="process-select" class="cpu-usage__label">Processes</label>
-          <select
-            id="process-select"
-            v-model="selectedProcess"
-            @change="updateChartData"
-            class="cpu-usage__select"
-          >
-            <option value="all">All Processes</option>
-            <option v-for="process in processes" :key="process" :value="process">
-              {{ process }}
+              Iteration {{ run.iteration }}
             </option>
           </select>
         </div>
@@ -64,10 +52,14 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { defineProps } from 'vue'
+import { useWidgetStore } from '@/stores/widgets'
 import LineChart from '../Charts/LineChart.vue'
 import type { Widget } from '@/types/widgets.types'
-import type { MetaData } from '@/types/chart.types'
 import { getColor } from '@/utils/color.utils'
+import type { MetaData } from '@/types/scenario.types'
+import type { ChartData } from 'chart.js'
+
+const widgetStore = useWidgetStore()
 
 const minWidth = 2
 const minHeight = 5
@@ -77,46 +69,47 @@ const props = defineProps<{
 }>()
 
 const selectedRunIteration = ref('')
-const selectedProcess = ref('all')
 
-const processes = computed(() => {
-  const [selectedRunId, selectedIteration] = selectedRunIteration.value.split('-')
-  const selectedRunData = props.data.metadata.runs.find(
-    (run) => run.run_id === selectedRunId && run.iteration === Number(selectedIteration)
-  )
-  if (!selectedRunData) return []
-  const processNames = selectedRunData.cpu_utilization.map((process) => Object.keys(process)[0])
-  return processNames
+const filteredRunIterations = computed(() => {
+  const currentRunId = widgetStore.currentRunId
+  if (!currentRunId) return []
+
+  const currentRun = props.data.metadata.runs.find((run) => run.run_id === currentRunId)
+  if (!currentRun) return []
+
+  return currentRun.iterations.map((iteration) => ({
+    runId: currentRun.run_id,
+    iteration: iteration.iteration
+  }))
 })
 
-const chartData = ref({ labels: [], datasets: [] })
+const chartData = ref({ labels: [], datasets: [] } as ChartData<'line'>)
 
 const updateChartData = () => {
   const [selectedRunId, selectedIteration] = selectedRunIteration.value.split('-')
-  const selectedRunData = props.data.metadata.runs.find(
-    (run) => run.run_id === selectedRunId && run.iteration === Number(selectedIteration)
+  const selectedRun = props.data.metadata.runs.find((run) => run.run_id === selectedRunId)
+  const selectedRunData = selectedRun?.iterations.find(
+    (iteration) => iteration.iteration === Number(selectedIteration)
   )
-  if (!selectedRunData) return
 
-  const labels = selectedRunData.cpu_utilization[0][
-    Object.keys(selectedRunData.cpu_utilization[0])[0]
-  ].map((d) => new Date(d.timestamp * 1000).toLocaleTimeString())
+  if (!selectedRunData || !selectedRunData.usage) {
+    chartData.value = { labels: [], datasets: [] }
+    return
+  }
 
-  const datasets = selectedRunData.cpu_utilization
-    .map((process, index) => {
-      const processName = Object.keys(process)[0]
-      if (selectedProcess.value !== 'all' && selectedProcess.value !== processName) return null
-      return {
-        label: processName,
-        data: process[processName].map((d) => d.cpu_usage),
-        backgroundColor: getColor(index),
-        borderColor: getColor(index),
-        borderWidth: 1,
-        fill: false,
-        tension: 0.1
-      }
-    })
-    .filter((ds) => ds !== null)
+  const labels = selectedRunData.usage.map((d) => new Date(d.timestamp).toLocaleTimeString())
+
+  const datasets = [
+    {
+      label: 'CPU Usage',
+      data: selectedRunData.usage.map((d) => d.cpuUsage),
+      backgroundColor: getColor(0),
+      borderColor: getColor(0),
+      borderWidth: 1,
+      fill: false,
+      tension: 0.1
+    }
+  ]
 
   chartData.value = {
     labels,
@@ -126,26 +119,23 @@ const updateChartData = () => {
 
 const avgCpuUtilization = computed(() => {
   const [selectedRunId, selectedIteration] = selectedRunIteration.value.split('-')
-  const selectedRunData = props.data.metadata.runs.find(
-    (run) => run.run_id === selectedRunId && run.iteration === Number(selectedIteration)
+  const selectedRun = props.data.metadata.runs.find((run) => run.run_id === selectedRunId)
+  const selectedRunData = selectedRun?.iterations.find(
+    (iteration) => iteration.iteration === Number(selectedIteration)
   )
-  if (!selectedRunData) return 0
 
-  const totalCpuUsage = selectedRunData.cpu_utilization
-    .flatMap((process) => Object.values(process)[0])
-    .reduce((acc, usage) => acc + Number(usage.cpu_usage), 0)
+  if (!selectedRunData || !selectedRunData.usage) return '0.00'
 
-  const count = selectedRunData.cpu_utilization.flatMap(
-    (process) => Object.values(process)[0]
-  ).length
+  const totalCpuUsage = selectedRunData.usage.reduce((acc, usage) => acc + usage.cpuUsage, 0)
+  const count = selectedRunData.usage.length
 
   return (totalCpuUsage / count).toFixed(2)
 })
 
 const initializeSelections = () => {
-  if (props.data.metadata.runs.length > 0) {
-    selectedRunIteration.value = `${props.data.metadata.runs[0].run_id}-${props.data.metadata.runs[0].iteration}`
-    selectedProcess.value = 'all'
+  if (filteredRunIterations.value.length > 0) {
+    const firstRun = filteredRunIterations.value[0]
+    selectedRunIteration.value = `${firstRun.runId}-${firstRun.iteration}`
   }
 }
 
@@ -154,10 +144,10 @@ onMounted(() => {
   updateChartData()
 })
 
-watch([selectedRunIteration, selectedProcess], updateChartData)
+watch(selectedRunIteration, updateChartData)
 
 watch(
-  () => props.data,
+  [() => props.data, () => widgetStore.currentRunId],
   async () => {
     await nextTick()
     initializeSelections()
@@ -165,6 +155,27 @@ watch(
   },
   { deep: true }
 )
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      max: 100,
+      title: {
+        display: true,
+        text: 'CPU Usage (%)'
+      }
+    },
+    x: {
+      title: {
+        display: true,
+        text: 'Time'
+      }
+    }
+  }
+}
 </script>
 
 <style scoped>

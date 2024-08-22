@@ -1,7 +1,7 @@
 <template>
   <div class="layout">
     <div :class="{ blurred: widgetStore.sidebarVisible }" class="layout__main">
-      <AppHeader :show-add-widget="showAddWidget" />
+      <AppHeader />
       <!-- <AppSidebar /> -->
       <div class="layout__content">
         <div class="layout__title">
@@ -18,14 +18,12 @@
         </div>
       </div>
     </div>
-    <AddWidgetSidebar />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useWidgetStore } from '@/stores/widgets'
 import AppHeader from '@/components/Common/Header/AppHeader.vue'
-import AddWidgetSidebar from '@/components/Common/Sidebar/AppWidgetSidebar.vue'
 
 const widgetStore = useWidgetStore()
 </script>

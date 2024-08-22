@@ -1,5 +1,5 @@
+import type { ScenariosResponse, ScenarioResponse } from '@/types/scenario.types'
 import baseApi from '../baseApi'
-import type { ScenariosResponse, ScenarioResponse } from './types'
 
 export const getScenarios = async (params?: {
   fromDate?: number

@@ -1,5 +1,5 @@
 import { getScenarios, getScenario } from '@/services/api/scenarios/scenariosApi'
-import type { ScenariosResponse, ScenarioResponse } from '@/services/api/scenarios/types'
+import type { ScenariosResponse, ScenarioResponse } from '@/types/scenario.types'
 import { defineStore } from 'pinia'
 
 export const useScenarioStore = defineStore('scenarioStore', {
@@ -37,7 +37,6 @@ export const useScenarioStore = defineStore('scenarioStore', {
         limit?: number
       }
     ) {
-      console.log('fetching scenario details', params)
       this.loading = true
       this.error = null
       try {

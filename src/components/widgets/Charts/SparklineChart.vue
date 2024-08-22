@@ -12,7 +12,7 @@ import {
   LinearScale,
   CategoryScale,
   Tooltip,
-  ChartOptions
+  type ChartOptions
 } from 'chart.js'
 
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip)

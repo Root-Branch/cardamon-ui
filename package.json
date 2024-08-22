@@ -15,7 +15,8 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
     "prepare": "husky install",
-    "lint-staged": "lint-staged"
+    "lint-staged": "lint-staged",
+    "start": "serve -s dist -l 5173"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
@@ -31,6 +32,7 @@
     "gridstack": "^10.1.2",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
+    "serve": "^14.2.3",
     "vue": "^3.4.21",
     "vue-chartjs": "^5.3.1",
     "vue-router": "^4.3.0"

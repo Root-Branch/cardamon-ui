@@ -31,10 +31,10 @@ import { WidgetType, type Widget } from '@/types/widgets.types'
 import { GridStack, type GridStackNode } from 'gridstack'
 import 'gridstack/dist/gridstack.min.css'
 import 'gridstack/dist/gridstack-extra.min.css'
-import MetricCard from '@/components/Widgets/MetricCard/MetricCard.vue'
-import DynamicChart from '@/components/Widgets/DynamicChart/DynamicChart.vue'
-import CpuUsageChart from '@/components/Widgets/CpuUsageChart/CpuUsageChart.vue'
-import DataTable from '@/components/Widgets/Table/DataTable.vue'
+import MetricCard from '@/components/widgets/MetricCard/MetricCard.vue'
+import DynamicChart from '@/components/widgets/DynamicChart/DynamicChart.vue'
+import CpuUsageChart from '@/components/widgets/CpuUsageChart/CpuUsageChart.vue'
+import RunsTable from '@/components/widgets/Table/RunsTable.vue'
 
 const route = useRoute()
 const scenarioName = route.params.scenarioName
@@ -68,7 +68,7 @@ const getComponent = (type: string) => {
     case WidgetType.CPU_USAGE:
       return CpuUsageChart
     case WidgetType.TABLE:
-      return DataTable
+      return RunsTable
     default:
       return null
   }
@@ -112,10 +112,10 @@ const onChange = (event: Event, items: Array<GridStackNode>) => {
 }
 
 const handlePageChange = async (page: number) => {
-  await scenarioStore.fetchScenarioDetails(scenarioName as string, { page, limit: 5 })
+  await scenarioStore.fetchScenarioDetails(scenarioName as string, { page })
   await widgetStore.updateWidgetsData(
     scenarioName as string,
-    scenarioStore.scenarioDetails[scenarioName]
+    scenarioStore.scenarioDetails[scenarioName as string]
   )
 }
 
@@ -131,7 +131,7 @@ watch(
 )
 
 watch(
-  () => widgetStore.scenarioWidgets[scenarioName],
+  () => widgetStore.scenarioWidgets[scenarioName as string],
   (newWidgets) => {
     widgets.value = newWidgets || []
   }

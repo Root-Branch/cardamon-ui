@@ -1,3 +1,3 @@
 export interface DatabaseEndpointResponse {
-  database_endpoint: string
+  database_url: string
 }

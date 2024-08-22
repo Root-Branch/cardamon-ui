@@ -27,20 +27,20 @@
                 item.name
               }}</a>
             </fwb-table-cell>
+            <fwb-table-cell class="data-table__table-cell"
+              >{{ item.avgCo2Emission }} kg</fwb-table-cell
+            >
+            <fwb-table-cell class="data-table__table-cell"
+              >{{ item.last5AvgCpu.toFixed(2) }} %</fwb-table-cell
+            >
+            <fwb-table-cell class="data-table__table-cell"
+              >{{ item.avgPowerConsumption }} KWh</fwb-table-cell
+            >
             <fwb-table-cell class="data-table__table-cell">{{
-              item.avg_co2_emission
-            }}</fwb-table-cell>
-            <fwb-table-cell class="data-table__table-cell">{{
-              item.avg_cpu_utilization
-            }}</fwb-table-cell>
-            <fwb-table-cell class="data-table__table-cell">{{
-              item.avg_power_consumption
-            }}</fwb-table-cell>
-            <fwb-table-cell class="data-table__table-cell">{{
-              formatLastExecution(item.last_start_time)
+              formatLastExecution(item.lastStartTime)
             }}</fwb-table-cell>
             <fwb-table-cell class="data-table__table-cell fixed-width">
-              <Sparkline :data="item.co2_emission_trend" />
+              <Sparkline :data="item.co2EmissionTrend" />
             </fwb-table-cell>
           </fwb-table-row>
         </fwb-table-body>
@@ -74,7 +74,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { format } from 'date-fns'
-import Sparkline from '@/components/Widgets/Charts/SparklineChart.vue'
+import Sparkline from '@/components/widgets/Charts/SparklineChart.vue'
 import {
   FwbTable,
   FwbTableHead,
@@ -84,10 +84,11 @@ import {
   FwbTableCell,
   FwbPagination
 } from 'flowbite-vue'
+import { type Scenario } from '@/types/scenario.types'
 
 const props = defineProps({
   data: {
-    type: Array,
+    type: Array as () => Scenario[],
     required: true
   },
   totalPages: {
@@ -96,10 +97,6 @@ const props = defineProps({
   },
   currentPage: {
     type: Number,
-    required: true
-  },
-  loading: {
-    type: Boolean,
     required: true
   }
 })
@@ -121,7 +118,7 @@ watch(
 )
 
 const formatLastExecution = (timestamp: number) => {
-  const date = new Date(timestamp * 1000)
+  const date = new Date(timestamp)
   const now = new Date()
 
   const minutesDiff = (now.getTime() - date.getTime()) / 60000

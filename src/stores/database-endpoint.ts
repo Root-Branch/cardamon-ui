@@ -15,7 +15,7 @@ export const useDatabaseStore = defineStore('databaseStore', {
       this.error = null
       try {
         const response = await getDatabaseEndpoint()
-        this.databaseEndpoint = response.database_endpoint
+        this.databaseEndpoint = response
       } catch (error) {
         this.error = 'Failed to fetch database endpoint'
       } finally {
