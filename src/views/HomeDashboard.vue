@@ -58,7 +58,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
-import ListTable from '@/components/Widgets/Table/ListTable.vue'
+import ListTable from '@/components/widgets/Table/ListTable.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useScenarioStore } from '@/stores/scenario'
 // import { debounce } from '@/utils/debounce.utils'

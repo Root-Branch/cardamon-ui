@@ -31,10 +31,10 @@ import { WidgetType, type Widget } from '@/types/widgets.types'
 import { GridStack, type GridStackNode } from 'gridstack'
 import 'gridstack/dist/gridstack.min.css'
 import 'gridstack/dist/gridstack-extra.min.css'
-import MetricCard from '@/components/Widgets/MetricCard/MetricCard.vue'
-import DynamicChart from '@/components/Widgets/DynamicChart/DynamicChart.vue'
-import CpuUsageChart from '@/components/Widgets/CpuUsageChart/CpuUsageChart.vue'
-import DataTable from '@/components/Widgets/Table/DataTable.vue'
+import MetricCard from '@/components/widgets/MetricCard/MetricCard.vue'
+import DynamicChart from '@/components/widgets/DynamicChart/DynamicChart.vue'
+import CpuUsageChart from '@/components/widgets/CpuUsageChart/CpuUsageChart.vue'
+import DataTable from '@/components/widgets/Table/DataTable.vue'
 
 const route = useRoute()
 const scenarioName = route.params.scenarioName

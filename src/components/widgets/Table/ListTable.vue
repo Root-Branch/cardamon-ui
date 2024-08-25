@@ -74,7 +74,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { format } from 'date-fns'
-import Sparkline from '@/components/Widgets/Charts/SparklineChart.vue'
+import Sparkline from '@/components/widgets/Charts/SparklineChart.vue'
 import {
   FwbTable,
   FwbTableHead,
