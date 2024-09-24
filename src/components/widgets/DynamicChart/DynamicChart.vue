@@ -10,57 +10,28 @@
     :gs-min-h="minHeight"
   >
     <div class="grid-stack-item-content grid-stack-item dynamic-chart">
-      <!-- Header with title and actions -->
+      <!-- Header with title -->
       <div class="dynamic-chart__header">
-        <h3 class="dynamic-chart__title">
-          CO2 Emission and Power Consumption for Run ID: {{ widgetStore.currentRunId }}
-        </h3>
-      </div>
-      <!-- Metric buttons and chart type selector -->
-      <div class="dynamic-chart__controls">
-        <div class="dynamic-chart__metrics">
-          <button
-            v-for="metric in metrics"
-            :key="metric"
-            @click="selectMetric(metric)"
-            :class="['dynamic-chart__metric-button', { active: selectedMetric === metric }]"
-          >
-            {{ metric }}
-          </button>
-        </div>
-        <fwb-dropdown :text="chartTypeText" align-to-end>
-          <template #trigger>
-            <button class="dynamic-chart__chart-type-button">
-              <span class="mr-2">{{ chartTypeText }}</span>
-              <font-awesome-icon icon="chevron-down" />
-            </button>
-          </template>
-          <div class="dynamic-chart__dropdown-menu">
+        <h3 class="dynamic-chart__title">Distribution by Processes</h3>
+        <div class="dynamic-chart__controls">
+          <div class="dynamic-chart__metrics">
             <button
-              @click="() => changeChartType(ChartType.LINE)"
-              class="dynamic-chart__dropdown-item"
+              v-for="metric in metrics"
+              :key="metric"
+              @click="selectMetric(metric)"
+              :class="['dynamic-chart__metric-button', { active: selectedMetric === metric }]"
             >
-              Line Chart
-            </button>
-            <button
-              @click="() => changeChartType(ChartType.BAR)"
-              class="dynamic-chart__dropdown-item"
-            >
-              Bar Chart
-            </button>
-            <button
-              @click="() => changeChartType(ChartType.PIE)"
-              class="dynamic-chart__dropdown-item"
-            >
-              Pie Chart
+              {{ metric }}
             </button>
           </div>
-        </fwb-dropdown>
+        </div>
       </div>
       <!-- Total value display -->
       <div class="dynamic-chart__total">
-        <div class="dynamic-chart__total-title">TOTAL {{ selectedMetric.replace('_', ' ') }}</div>
-        <div class="dynamic-chart__total-value">{{ totalValue }} {{ unit }}</div>
+        <div class="dynamic-chart__total-title">TOTAL {{ selectedMetric }}</div>
+        <div class="dynamic-chart__total-value">
+          {{ totalValue }}
+        </div>
       </div>
       <!-- Chart canvas -->
       <div class="dynamic-chart__chart-container">
@@ -73,14 +44,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { defineProps } from 'vue'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { FwbDropdown } from 'flowbite-vue'
 import { useWidgetStore } from '@/stores/widgets'
-import type { Widget } from '@/types/widgets.types'
-import LineChart from '../Charts/LineChart.vue'
-import BarChart from '../Charts/BarChart.vue'
 import PieChart from '../Charts/PieChart.vue'
-import { ChartType, MetricType } from '@/types/chart.types'
 import {
   chartBackgroundColor,
   chartBorderColor,
@@ -89,6 +54,8 @@ import {
 } from '@/constants/chart.const'
 import { useThemeStore } from '@/stores/theme'
 import type { MetaData } from '@/types/scenario.types'
+import type { Widget } from '@/types/widgets.types'
+import { MetricType } from '@/types/chart.types'
 
 const minWidth = 3
 const minHeight = 5
@@ -98,123 +65,31 @@ const props = defineProps<{
 }>()
 
 const widgetStore = useWidgetStore()
+const selectedRun = computed(() => widgetStore.selectedRun)
 
-const selectedMetric = ref<MetricType>(MetricType.CO2)
-const chartType = ref<ChartType>(ChartType.BAR)
+const selectedMetric = ref<MetricType>(MetricType.POWER)
 
 const metrics = Object.values(MetricType)
 
-// Mock function to generate random data
-const generateMockData = (min: number, max: number) => {
-  return Math.random() * (max - min) + min
-}
-
-const currentRun = computed(() => {
-  return (
-    props.data.metadata.runs.find((run) => run.run_id === widgetStore.currentRunId) || {
-      iterations: []
-    }
-  )
-})
-
-const totalValue = computed(() => {
-  const iterations = currentRun.value.iterations
-  let total = 0
-  for (const iteration of iterations) {
-    switch (selectedMetric.value) {
-      case MetricType.CO2:
-        total += generateMockData(0.1, 1) // Mock CO2 emission data (0.1 to 1 kg)
-        break
-      case MetricType.POWER:
-        total += generateMockData(1, 10) // Mock power consumption data (1 to 10 kWh)
-        break
-    }
-  }
-  return total.toFixed(2)
-})
-
-const unit = computed(() => {
-  switch (selectedMetric.value) {
-    case MetricType.CO2:
-      return 'kg'
-    case MetricType.POWER:
-      return 'kWh'
-    default:
-      return ''
-  }
-})
-
-const titleText = computed(() => {
-  switch (selectedMetric.value) {
-    case MetricType.CO2:
-      return 'Total CO2 Emissions'
-    case MetricType.POWER:
-      return 'Total Power Consumption'
-    default:
-      return 'Metric'
-  }
-})
-
-const ChartComponent = computed(() => {
-  switch (chartType.value) {
-    case ChartType.LINE:
-      return LineChart
-    case ChartType.BAR:
-      return BarChart
-    case ChartType.PIE:
-      return PieChart
-    default:
-      return LineChart
-  }
-})
-
-const chartTypeText = computed(() => {
-  switch (chartType.value) {
-    case ChartType.LINE:
-      return 'Line Chart'
-    case ChartType.BAR:
-      return 'Bar Chart'
-    case ChartType.PIE:
-      return 'Pie Chart'
-    default:
-      return 'Chart'
-  }
-})
+const ChartComponent = ref(PieChart)
 
 const themeStore = useThemeStore()
 const darkMode = computed(() => themeStore.darkMode)
 
+const totalValue = computed(() => {
+  return selectedMetric.value === MetricType.POWER
+    ? `${selectedRun.value?.pow.toFixed(2)} kWh`
+    : `${selectedRun.value?.co2.toFixed(2)} g`
+})
+
 const chartData = computed(() => ({
-  labels: currentRun.value.iterations.map((iteration) => `Iteration ${iteration.iteration}`),
+  labels: selectedRun.value?.processes.map((process: any) => process.processName) || [],
   datasets: [
     {
-      label: selectedMetric.value,
-      data: currentRun.value.iterations.map(() => {
-        switch (selectedMetric.value) {
-          case MetricType.CO2:
-            return generateMockData(0.1, 1) // Mock CO2 emission data (0.1 to 1 kg)
-          case MetricType.POWER:
-            return generateMockData(1, 10) // Mock power consumption data (1 to 10 kWh)
-          default:
-            return 0
-        }
-      }),
-      backgroundColor:
-        chartType.value === ChartType.PIE
-          ? darkMode.value
-            ? darkModeChartBackgroundColor
-            : chartBackgroundColor
-          : darkMode.value
-            ? darkModeChartBackgroundColor[0]
-            : chartBackgroundColor[0],
-      borderColor:
-        chartType.value === ChartType.PIE
-          ? darkMode.value
-            ? darkModeChartBorderColor
-            : chartBorderColor
-          : darkMode.value
-            ? darkModeChartBorderColor[0]
-            : chartBorderColor[0],
+      label: 'Power Contribution',
+      data: selectedRun.value?.processes.map((process: any) => process.powContribPerc) || [],
+      backgroundColor: darkMode.value ? darkModeChartBackgroundColor : chartBackgroundColor,
+      borderColor: darkMode.value ? darkModeChartBorderColor : chartBorderColor,
       borderWidth: 1
     }
   ]
@@ -237,36 +112,8 @@ const chartOptions: any = computed(() => ({
         color: darkMode.value ? 'white' : 'black'
       }
     }
-  },
-  scales: {
-    x: {
-      ticks: {
-        color: darkMode.value ? 'white' : 'black'
-      },
-      grid: {
-        color: darkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-      }
-    },
-    y: {
-      ticks: {
-        color: darkMode.value ? 'white' : 'black'
-      },
-      grid: {
-        color: darkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-      }
-    }
-  },
-  interaction: {
-    mode: 'nearest',
-    axis: 'x',
-    intersect: false
   }
 }))
-
-// Change chart type and selected metric
-const changeChartType = (type: ChartType) => {
-  chartType.value = type
-}
 
 const selectMetric = (metric: MetricType) => {
   selectedMetric.value = metric
@@ -279,11 +126,23 @@ const selectMetric = (metric: MetricType) => {
 }
 
 .dynamic-chart__header {
-  @apply flex justify-between items-center;
+  @apply mb-4 flex justify-between items-center;
 }
 
 .dynamic-chart__title {
-  @apply text-lg font-semibold;
+  @apply text-xl font-semibold text-gray-900 dark:text-gray-200;
+}
+
+.dynamic-chart__total {
+  @apply text-left mt-8;
+}
+
+.dynamic-chart__total-title {
+  @apply text-sm font-light text-gray-500 dark:text-gray-400;
+}
+
+.dynamic-chart__total-value {
+  @apply text-5xl font-bold text-chart-value mt-2 dark:text-white;
 }
 
 .dynamic-chart__controls {
@@ -306,31 +165,7 @@ const selectMetric = (metric: MetricType) => {
   @apply bg-gray-300;
 }
 
-.dynamic-chart__chart-type-button {
-  @apply text-gray-500 flex justify-between items-center rounded-xl px-6 py-2 border border-gray-300 text-sm dark:text-white dark:border-gray-600;
-}
-
-.dynamic-chart__dropdown-menu {
-  @apply bg-white rounded shadow-lg w-40 text-sm dark:bg-gray-800 dark:text-gray-200;
-}
-
-.dynamic-chart__dropdown-item {
-  @apply p-2 w-full hover:bg-gray-100 dark:hover:bg-gray-700;
-}
-
-.dynamic-chart__total {
-  @apply text-left mt-8;
-}
-
-.dynamic-chart__total-title {
-  @apply text-sm font-light text-gray-500 dark:text-gray-400;
-}
-
-.dynamic-chart__total-value {
-  @apply text-5xl font-bold text-chart-value mt-2 dark:text-white;
-}
-
 .dynamic-chart__chart-container {
-  @apply mt-4 cursor-pointer;
+  @apply h-72 cursor-pointer;
 }
 </style>

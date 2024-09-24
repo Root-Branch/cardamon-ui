@@ -12,9 +12,7 @@
     <div class="cpu-usage grid-stack-item-content grid-stack-item">
       <!-- Header with title and actions -->
       <div class="cpu-usage__header">
-        <h3 class="cpu-usage__title">
-          CPU Usage Timeline for Run ID: {{ widgetStore.currentRunId }}
-        </h3>
+        <h3 class="cpu-usage__title">CPU Usage Timeline</h3>
       </div>
       <!-- Selector for run and iteration -->
       <div class="cpu-usage__selectors">
@@ -26,20 +24,11 @@
             @change="updateChartData"
             class="cpu-usage__select"
           >
-            <option
-              v-for="run in filteredRunIterations"
-              :key="`${run.runId}-${run.iteration}`"
-              :value="`${run.runId}-${run.iteration}`"
-            >
-              Iteration {{ run.iteration }}
+            <option v-for="(iteration, index) in iterations" :key="index" :value="index">
+              Iteration {{ index + 1 }}
             </option>
           </select>
         </div>
-      </div>
-      <!-- Average CPU utilization display -->
-      <div class="cpu-usage__total">
-        <div class="cpu-usage__total-title">AVG. CPU UTILIZATION</div>
-        <div class="cpu-usage__total-value">{{ avgCpuUtilization }} %</div>
       </div>
       <!-- Chart canvas -->
       <div class="cpu-usage__chart-container">
@@ -68,48 +57,36 @@ const props = defineProps<{
   data: Widget<MetaData>
 }>()
 
-const selectedRunIteration = ref('')
+const selectedRunIteration = ref(0)
 
-const filteredRunIterations = computed(() => {
-  const currentRunId = widgetStore.currentRunId
-  if (!currentRunId) return []
+const selectedRun = computed(() => widgetStore.selectedRun)
 
-  const currentRun = props.data.metadata.runs.find((run) => run.run_id === currentRunId)
-  if (!currentRun) return []
-
-  return currentRun.iterations.map((iteration) => ({
-    runId: currentRun.run_id,
-    iteration: iteration.iteration
-  }))
+const iterations = computed(() => {
+  return selectedRun.value?.processes[0]?.iterationMetrics || []
 })
 
 const chartData = ref({ labels: [], datasets: [] } as ChartData<'line'>)
 
 const updateChartData = () => {
-  const [selectedRunId, selectedIteration] = selectedRunIteration.value.split('-')
-  const selectedRun = props.data.metadata.runs.find((run) => run.run_id === selectedRunId)
-  const selectedRunData = selectedRun?.iterations.find(
-    (iteration) => iteration.iteration === Number(selectedIteration)
-  )
+  const iterationIndex = selectedRunIteration.value
+  const selectedIteration = iterations.value[iterationIndex]
 
-  if (!selectedRunData || !selectedRunData.usage) {
+  if (!selectedIteration) {
     chartData.value = { labels: [], datasets: [] }
     return
   }
 
-  const labels = selectedRunData.usage.map((d) => new Date(d.timestamp).toLocaleTimeString())
+  const labels = selectedIteration.map((d) => new Date(d.timestamp).toLocaleTimeString())
 
-  const datasets = [
-    {
-      label: 'CPU Usage',
-      data: selectedRunData.usage.map((d) => d.cpuUsage),
-      backgroundColor: getColor(0),
-      borderColor: getColor(0),
-      borderWidth: 1,
-      fill: false,
-      tension: 0.1
-    }
-  ]
+  const datasets = selectedRun.value.processes.map((process, index) => ({
+    label: process.processName,
+    data: process.iterationMetrics[iterationIndex].map((d) => d.cpu_usage),
+    backgroundColor: getColor(index),
+    borderColor: getColor(index),
+    borderWidth: 1,
+    fill: false,
+    tension: 0.1
+  }))
 
   chartData.value = {
     labels,
@@ -117,40 +94,16 @@ const updateChartData = () => {
   }
 }
 
-const avgCpuUtilization = computed(() => {
-  const [selectedRunId, selectedIteration] = selectedRunIteration.value.split('-')
-  const selectedRun = props.data.metadata.runs.find((run) => run.run_id === selectedRunId)
-  const selectedRunData = selectedRun?.iterations.find(
-    (iteration) => iteration.iteration === Number(selectedIteration)
-  )
-
-  if (!selectedRunData || !selectedRunData.usage) return '0.00'
-
-  const totalCpuUsage = selectedRunData.usage.reduce((acc, usage) => acc + usage.cpuUsage, 0)
-  const count = selectedRunData.usage.length
-
-  return (totalCpuUsage / count).toFixed(2)
-})
-
-const initializeSelections = () => {
-  if (filteredRunIterations.value.length > 0) {
-    const firstRun = filteredRunIterations.value[0]
-    selectedRunIteration.value = `${firstRun.runId}-${firstRun.iteration}`
-  }
-}
-
 onMounted(() => {
-  initializeSelections()
   updateChartData()
 })
 
 watch(selectedRunIteration, updateChartData)
 
 watch(
-  [() => props.data, () => widgetStore.currentRunId],
+  () => selectedRun.value,
   async () => {
     await nextTick()
-    initializeSelections()
     updateChartData()
   },
   { deep: true }
@@ -162,7 +115,6 @@ const chartOptions = {
   scales: {
     y: {
       beginAtZero: true,
-      max: 100,
       title: {
         display: true,
         text: 'CPU Usage (%)'
@@ -207,19 +159,7 @@ const chartOptions = {
   @apply cursor-pointer block w-full p-2 rounded-xl font-light text-sm border dark:bg-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700;
 }
 
-.cpu-usage__total {
-  @apply text-left mt-8;
-}
-
-.cpu-usage__total-title {
-  @apply text-sm font-light text-gray-500 dark:text-gray-400;
-}
-
-.cpu-usage__total-value {
-  @apply text-5xl font-bold text-chart-value mt-2 dark:text-white;
-}
-
 .cpu-usage__chart-container {
-  @apply mt-4 cursor-pointer;
+  @apply mt-4 cursor-pointer h-72;
 }
 </style>

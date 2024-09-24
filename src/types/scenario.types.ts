@@ -25,13 +25,12 @@ export interface Iteration {
 }
 
 export interface Scenario {
-  name: string
-  avgCo2Emission: number
-  last5AvgCpu: number
-  avgPowerConsumption: number
-  lastStartTime: number
-  co2EmissionTrend: number[]
-  runs: Run[]
+  scenarioName: string
+  co2: number
+  pow: number
+  lastRun: number
+  sparkline: number[]
+  trend: number
 }
 
 export interface ScenariosResponse {

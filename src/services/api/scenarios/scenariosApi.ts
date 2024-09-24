@@ -19,6 +19,6 @@ export const getScenario = async (
     limit?: number
   }
 ): Promise<ScenarioResponse> => {
-  const response = await baseApi.get<ScenarioResponse>(`/api/scenarios/${scenarioName}`, { params })
+  const response = await baseApi.get<ScenarioResponse>(`/api/runs/${scenarioName}`, { params })
   return response.data
 }

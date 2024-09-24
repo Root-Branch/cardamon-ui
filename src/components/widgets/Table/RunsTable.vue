@@ -13,107 +13,62 @@
       <!-- Header with title, actions, and Run ID -->
       <div class="data-table__header">
         <div class="data-table__title-container">
-          <h3 class="data-table__title">Runs</h3>
-          <p class="data-table__subtitle">Total runs: {{ totalRuns }}</p>
-          <p class="data-table__run-id">
-            Showing Iterations of Run ID: <span class="font-medium">{{ currentRun?.run_id }}</span>
-          </p>
+          <h3 class="data-table__title">List of runs</h3>
+          <!-- <p class="data-table__subtitle">Total runs: {{ totalRuns }}</p> -->
         </div>
       </div>
 
       <!-- Table -->
       <div class="data-table__table-container">
-        <fwb-table hoverable class="data-table__table">
+        <fwb-table hoverable>
           <fwb-table-head class="data-table__table-header">
-            <fwb-table-head-cell class="data-table__table-head-cell">Iteration</fwb-table-head-cell>
             <fwb-table-head-cell class="data-table__table-head-cell"
               >Start Time</fwb-table-head-cell
             >
-            <fwb-table-head-cell class="data-table__table-head-cell">Stop Time</fwb-table-head-cell>
+            <fwb-table-head-cell class="data-table__table-head-cell">Duration</fwb-table-head-cell>
             <fwb-table-head-cell class="data-table__table-head-cell"
-              >Avg. CPU Usage</fwb-table-head-cell
+              >Power Consumption</fwb-table-head-cell
             >
             <fwb-table-head-cell class="data-table__table-head-cell"
-              >Total CO2 Emission</fwb-table-head-cell
-            >
-            <fwb-table-head-cell class="data-table__table-head-cell"
-              >Total Power Consumption</fwb-table-head-cell
+              >CO2 Emission</fwb-table-head-cell
             >
           </fwb-table-head>
-          <fwb-table-body class="data-table__table-body">
+          <fwb-table-body>
             <fwb-table-row
-              v-for="iteration in currentRun.iterations"
-              :key="iteration.iteration"
+              v-for="(run, index) in runs"
+              :key="index"
+              :class="{ 'data-table__table-row--selected': run === selectedRun }"
               class="data-table__table-row"
+              @click="selectRun(run)"
             >
               <fwb-table-cell class="data-table__table-cell">{{
-                iteration.iteration
-              }}</fwb-table-cell>
-              <fwb-table-cell class="data-table__table-cell">{{
-                formatDateTime(iteration.start_time)
-              }}</fwb-table-cell>
-              <fwb-table-cell class="data-table__table-cell">{{
-                formatDateTime(iteration.stop_time)
+                formatDateTime(run.startTime)
               }}</fwb-table-cell>
               <fwb-table-cell class="data-table__table-cell"
-                >{{ calculateAvgCpuUsage(iteration.usage) }}%</fwb-table-cell
+                >{{ run.duration.toFixed(2) }} s</fwb-table-cell
               >
               <fwb-table-cell class="data-table__table-cell"
-                >{{ calculateTotalCo2Emission(iteration.usage) }} g</fwb-table-cell
+                >{{ run.pow.toFixed(2) }} W</fwb-table-cell
               >
               <fwb-table-cell class="data-table__table-cell"
-                >{{ calculateTotalPowerConsumption(iteration.usage) }} Wh</fwb-table-cell
+                >{{ run.co2.toFixed(2) }} g</fwb-table-cell
               >
             </fwb-table-row>
           </fwb-table-body>
         </fwb-table>
       </div>
 
-      <!-- Run Navigation -->
-      <div class="data-table__run-navigation">
-        <button
-          @click="previousRun"
-          :disabled="currentRunIndex === 0 && currentPage === 1"
-          class="data-table__nav-button"
-          aria-label="Previous Run"
+      <!-- Pagination -->
+      <div class="data-table__pagination-container">
+        <fwb-pagination
+          v-model="currentPage"
+          :total-pages="totalPages"
+          :slice-length="5"
+          class="data-table__pagination"
+          @update:model-value="handlePageChange"
+          @page-changed="handlePageChange"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            class="w-4 h-4"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
-        <span class="data-table__run-count">Run {{ currentRunNumber }} of {{ totalRuns }}</span>
-        <button
-          @click="nextRun"
-          :disabled="currentRunIndex === runs.length - 1 && currentPage === pagination.totalPages"
-          class="data-table__nav-button"
-          aria-label="Next Run"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            class="w-4 h-4"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
+        </fwb-pagination>
       </div>
     </div>
   </div>
@@ -127,94 +82,60 @@ import {
   FwbTableHeadCell,
   FwbTableBody,
   FwbTableRow,
-  FwbTableCell
+  FwbTableCell,
+  FwbPagination
 } from 'flowbite-vue'
 import type { Widget } from '@/types/widgets.types'
 import { useWidgetStore } from '@/stores/widgets'
-import { calculateCo2Emission, calculatePowerConsumption } from '@/utils/usage.util'
-import type { MetaData } from '@/types/scenario.types'
-
-const minWidth = 3
-const minHeight = 5
 
 const props = defineProps<{
-  data: Widget<MetaData>
+  data: Widget<{
+    runs: any[]
+    pagination: { currentPage: number; totalPages: number; perPage: number }
+  }>
 }>()
-
-const widgetStore = useWidgetStore()
 
 const emit = defineEmits(['updatePage'])
 
+const widgetStore = useWidgetStore()
 const runs = computed(() => props.data.metadata.runs)
 const pagination = computed(() => props.data.metadata.pagination)
-const totalRuns = computed(() => pagination.value.totalScenarios)
-
 const currentPage = ref(pagination.value.currentPage)
-const currentRunIndex = ref(0)
-const currentRun = computed(() => runs.value[currentRunIndex.value])
-const currentRunNumber = computed(
-  () => (currentPage.value - 1) * pagination.value.perPage + currentRunIndex.value + 1
-)
-
-const formatDateTime = (timestamp: number) => {
-  const date = new Date(timestamp)
-  return date.toLocaleString()
-}
-
-const calculateAvgCpuUsage = (usage: { cpuUsage: number }[] | null) => {
-  if (!usage) return 'N/A'
-  const sum = usage.reduce((acc, curr) => acc + curr.cpuUsage, 0)
-  return (sum / usage.length).toFixed(2)
-}
-
-// Mock calculation functions for demonstration purposes
-const calculateTotalCo2Emission = (usage: { cpuUsage: number; timestamp: number }[] | null) => {
-  if (!usage) return 'N/A'
-  const totalEmission = usage.reduce((acc, curr) => acc + calculateCo2Emission(curr), 0)
-  return totalEmission.toFixed(4) // Already in grams, round to 2 decimal places
-}
-
-const calculateTotalPowerConsumption = (
-  usage: { cpuUsage: number; timestamp: number }[] | null
-) => {
-  if (!usage) return 'N/A'
-  const totalPower = usage.reduce((acc, curr) => acc + calculatePowerConsumption(curr), 0)
-  const totalWh = (totalPower * usage.length) / 3600 // Convert to Wh
-  return totalWh.toFixed(4) // Round to 2 decimal places
-}
+const totalPages = computed(() => pagination.value.totalPages)
+const selectedRun = computed(() => widgetStore.selectedRun)
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
   emit('updatePage', page)
 }
 
-const previousRun = () => {
-  if (currentRunIndex.value > 0) {
-    currentRunIndex.value--
-  } else if (currentPage.value > 1) {
-    handlePageChange(currentPage.value - 1)
-    currentRunIndex.value = pagination.value.perPage - 1
-  }
+const selectRun = (run: any) => {
+  console.log('selectRun', run)
+  widgetStore.setSelectedRun(run)
 }
 
-const nextRun = () => {
-  if (currentRunIndex.value < runs.value.length - 1) {
-    currentRunIndex.value++
-  } else if (currentPage.value < pagination.value.totalPages) {
-    handlePageChange(currentPage.value + 1)
-    currentRunIndex.value = 0
+watch(
+  () => pagination.value.currentPage,
+  (newPage) => {
+    currentPage.value = newPage
   }
+)
+
+// Watch the runs array and set the first run as the selected run by default
+watch(
+  runs,
+  (newRuns) => {
+    if (newRuns.length > 0 && !selectedRun.value) {
+      selectRun(newRuns[0])
+    }
+  },
+  { immediate: true }
+)
+
+const formatDateTime = (timestamp: number) => {
+  const date = new Date(timestamp)
+  return date.toLocaleString()
 }
-
-onMounted(() => {
-  widgetStore.setCurrentRunId(currentRun.value.run_id)
-})
-
-watch(currentRun, (newRun) => {
-  if (newRun) {
-    widgetStore.setCurrentRunId(newRun.run_id)
-  }
-})
 </script>
 
 <style scoped>
@@ -243,7 +164,7 @@ watch(currentRun, (newRun) => {
 }
 
 .data-table__table-container {
-  @apply overflow-x-auto cursor-default mb-4 overflow-y-auto h-72;
+  @apply overflow-x-auto cursor-default mb-8 overflow-y-auto;
 }
 
 .data-table__table {
@@ -259,11 +180,27 @@ watch(currentRun, (newRun) => {
 }
 
 .data-table__table-row {
-  @apply bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-light text-center border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 overflow-y-auto;
+  @apply bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-light text-center border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 overflow-y-auto cursor-pointer;
+}
+
+.data-table__table-row--selected {
+  @apply bg-blue-100 dark:bg-blue-900;
 }
 
 .data-table__table-cell {
   @apply text-center text-gray-600 dark:text-gray-300 font-light;
+}
+
+.data-table__pagination-container {
+  @apply flex justify-center mt-4 pb-4;
+}
+
+.data-table__pagination *:not(svg, div) {
+  @apply bg-white dark:bg-gray-800 border-none text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm;
+}
+
+.data-table__pagination *:not(svg, div):disabled {
+  @apply bg-gray-100 dark:bg-gray-700 border-none text-gray-500 dark:text-gray-400 text-sm;
 }
 
 .data-table__run-navigation {

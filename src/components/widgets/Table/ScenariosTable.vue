@@ -5,56 +5,63 @@
         <fwb-table-head class="data-table__table-header">
           <fwb-table-head-cell class="data-table__table-head-cell">Name</fwb-table-head-cell>
           <fwb-table-head-cell class="data-table__table-head-cell"
-            >Avg. Co2 Emission</fwb-table-head-cell
+            >Lastest Run Co2 Emission</fwb-table-head-cell
           >
           <fwb-table-head-cell class="data-table__table-head-cell"
-            >Avg. Cpu Utilization</fwb-table-head-cell
-          >
-          <fwb-table-head-cell class="data-table__table-head-cell"
-            >Avg. Power Consumption</fwb-table-head-cell
+            >Lastest Run Power Consumption</fwb-table-head-cell
           >
           <fwb-table-head-cell class="data-table__table-head-cell"
             >Last execution</fwb-table-head-cell
           >
           <fwb-table-head-cell class="data-table__table-head-cell fixed-width"
-            >CO2 Emission of last 10 runs</fwb-table-head-cell
+            >CO2 Emission of last 5 runs</fwb-table-head-cell
+          >
+          <fwb-table-head-cell class="data-table__table-head-cell fixed-width"
+            >Trend (over 5 runs)</fwb-table-head-cell
           >
         </fwb-table-head>
         <fwb-table-body>
           <fwb-table-row v-for="(item, index) in data" :key="index" class="data-table__table-row">
             <fwb-table-cell class="data-table__table-cell">
-              <a :href="`/scenarios/${item.name.replace(/\s/g, '-')}`" class="data-table__link">{{
-                item.name
-              }}</a>
+              <a
+                :href="`/scenarios/${item.scenarioName.replace(/\s/g, '-')}`"
+                class="data-table__link"
+                >{{ item.scenarioName }}</a
+              >
             </fwb-table-cell>
             <fwb-table-cell class="data-table__table-cell"
-              >{{ item.avgCo2Emission }} kg</fwb-table-cell
+              >{{ item.co2.toFixed(2) }} g</fwb-table-cell
             >
             <fwb-table-cell class="data-table__table-cell"
-              >{{ item.last5AvgCpu.toFixed(2) }} %</fwb-table-cell
-            >
-            <fwb-table-cell class="data-table__table-cell"
-              >{{ item.avgPowerConsumption }} KWh</fwb-table-cell
+              >{{ item.pow.toFixed(2) }} W</fwb-table-cell
             >
             <fwb-table-cell class="data-table__table-cell">{{
-              formatLastExecution(item.lastStartTime)
+              formatLastExecution(item.lastRun)
             }}</fwb-table-cell>
             <fwb-table-cell class="data-table__table-cell fixed-width">
-              <Sparkline :data="item.co2EmissionTrend" />
+              <Sparkline v-if="item.sparkline.length > 1" :data="item.sparkline" />
+              <span v-else>-</span>
             </fwb-table-cell>
-          </fwb-table-row>
-        </fwb-table-body>
-        <!-- <fwb-table-body v-else>
-          <fwb-table-row class="data-table__table-row">
-            <fwb-table-cell :colspan="6" class="data-table__table-cell text-center">
-              <div class="animate-pulse">
-                <div class="h-4 bg-gray-200 mt-3 mb-6 rounded"></div>
-                <div class="h-4 bg-gray-300 mb-6 rounded"></div>
-                <div class="h-4 bg-gray-200 mb-6 rounded"></div>
+            <fwb-table-cell class="data-table__table-cell fixed-width">
+              <div class="trend-chart-container">
+                <span
+                  :class="{
+                    'trend-up': item.trend > 0,
+                    'trend-down': item.trend < 0
+                  }"
+                >
+                  <template v-if="item.trend !== 0">
+                    <font-awesome-icon
+                      :icon="item.trend > 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'"
+                      size="xl"
+                    />
+                  </template>
+                  <template v-else> - </template>
+                </span>
               </div>
             </fwb-table-cell>
           </fwb-table-row>
-        </fwb-table-body> -->
+        </fwb-table-body>
       </fwb-table>
     </div>
     <div class="data-table__pagination-container">
@@ -85,6 +92,7 @@ import {
   FwbPagination
 } from 'flowbite-vue'
 import { type Scenario } from '@/types/scenario.types'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const props = defineProps({
   data: {
@@ -177,5 +185,17 @@ const formatLastExecution = (timestamp: number) => {
 
 .data-table__pagination *:not(svg, div):disabled {
   @apply bg-gray-100 dark:bg-gray-700 border-none text-gray-500 dark:text-gray-400 text-sm;
+}
+
+.trend-container {
+  @apply flex items-center justify-center;
+}
+
+.trend-up {
+  @apply text-green-500;
+}
+
+.trend-down {
+  @apply text-red-500;
 }
 </style>

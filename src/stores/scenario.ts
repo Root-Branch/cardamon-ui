@@ -41,6 +41,7 @@ export const useScenarioStore = defineStore('scenarioStore', {
       this.error = null
       try {
         const response = await getScenario(scenarioName, params)
+        console.log(1111, response)
         this.scenarioDetails[scenarioName] = response
       } catch (error) {
         this.error = `Failed to fetch details for scenario: ${scenarioName}`

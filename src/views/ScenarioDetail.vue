@@ -61,8 +61,8 @@ const grid = ref<GridStack | null>(null)
 
 const getComponent = (type: string) => {
   switch (type) {
-    case WidgetType.METRIC:
-      return MetricCard
+    // case WidgetType.METRIC:
+    //   return MetricCard
     case WidgetType.CHART:
       return DynamicChart
     case WidgetType.CPU_USAGE:

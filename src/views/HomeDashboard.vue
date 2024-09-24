@@ -5,8 +5,8 @@
     </template>
     <template #dashboard>
       <div class="dashboard__header">
-        <p class="dashboard__header-title">Scenarios</p>
-        <p class="dashboard__header-subtitle">Total scenarios: {{ totalScenarios }}</p>
+        <p class="dashboard__header-title">List of Scenarios</p>
+        <!-- <p class="dashboard__header-subtitle">Total scenarios: {{ totalScenarios }}</p> -->
       </div>
       <div class="dashboard__filters">
         <div class="dashboard__filters-group">

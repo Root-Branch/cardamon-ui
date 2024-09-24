@@ -2,8 +2,10 @@
   <header class="app-header">
     <div class="app-header__container">
       <div class="app-header__logo-section">
-        <img src="/logo-dark.svg" alt="Logo" class="app-header__logo-image block dark:hidden" />
-        <img src="/logo-light.svg" alt="Logo" class="app-header__logo-image hidden dark:block" />
+        <router-link to="/dashboard">
+          <img src="/logo-dark.svg" alt="Logo" class="app-header__logo-image block dark:hidden" />
+          <img src="/logo-light.svg" alt="Logo" class="app-header__logo-image hidden dark:block" />
+        </router-link>
       </div>
 
       <div class="app-header__right-section">
@@ -24,7 +26,7 @@
         </div> -->
 
         <!-- Database Info Icon with Tooltip -->
-        <fwb-tooltip placement="bottom" class="cursor-pointer">
+        <!-- <fwb-tooltip placement="bottom" class="cursor-pointer">
           <template #trigger>
             <font-awesome-layers class="fa-lg app-header__db-icon">
               <font-awesome-icon
@@ -41,7 +43,7 @@
               <span class="tooltip-content__info">{{ databaseEndpoint }}</span>
             </div>
           </template>
-        </fwb-tooltip>
+        </fwb-tooltip> -->
       </div>
     </div>
   </header>

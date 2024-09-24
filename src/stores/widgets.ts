@@ -8,7 +8,7 @@ export const useWidgetStore = defineStore('widgets', {
   state: () => ({
     scenarioWidgets: {} as Record<string, Widget[]>,
     sidebarVisible: false,
-    currentRunId: null as string | null
+    selectedRun: null as any | null // Add this line
   }),
   actions: {
     async initializeWidgets(scenarioName: string) {
@@ -21,7 +21,7 @@ export const useWidgetStore = defineStore('widgets', {
       const widgets = JSON.parse(JSON.stringify(defaultWidgets))
       await this.addWidgets(scenarioName, widgets)
     },
-    async getAvgMetrics(scenarioDetails: any) {
+    async getMetrics(scenarioDetails: any) {
       return [
         {
           metricType: 'CO2',
@@ -39,23 +39,22 @@ export const useWidgetStore = defineStore('widgets', {
     },
     async updateWidgetMetadata(widget: Widget, scenarioDetails: any) {
       switch (widget.type) {
-        case WidgetType.METRIC: {
-          const avgMetrics = await this.getAvgMetrics(scenarioDetails)
-          widget.metadata.value =
-            avgMetrics.find((metric: any) => metric.metricType === widget.metadata.key)?.value || 0
-          break
-        }
+        // case WidgetType.METRIC: {
+        //   const avgMetrics = await this.getMetrics(scenarioDetails)
+        //   widget.metadata.value =
+        //     avgMetrics.find((metric: any) => metric.metricType === widget.metadata.key)?.value || 0
+        //   break
+        // }
         case WidgetType.CHART: {
-          widget.metadata.runs = scenarioDetails.scenario.runs || []
-          widget.metadata.scenario = scenarioDetails.scenario || {}
+          widget.metadata.runs = scenarioDetails.runs || []
           break
         }
         case WidgetType.CPU_USAGE: {
-          widget.metadata.runs = scenarioDetails.scenario.runs || []
+          widget.metadata.runs = scenarioDetails.runs || []
           break
         }
         case WidgetType.TABLE: {
-          widget.metadata.runs = scenarioDetails.scenario.runs || []
+          widget.metadata.runs = scenarioDetails.runs || []
           widget.metadata.pagination = scenarioDetails.pagination || {}
           break
         }
@@ -106,8 +105,8 @@ export const useWidgetStore = defineStore('widgets', {
     setSidebarVisible(visible: boolean) {
       this.sidebarVisible = visible
     },
-    setCurrentRunId(runId: string) {
-      this.currentRunId = runId
+    setSelectedRun(run: any) {
+      this.selectedRun = run
     }
   },
   getters: {
