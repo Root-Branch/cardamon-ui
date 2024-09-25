@@ -76,11 +76,11 @@ const updateChartData = () => {
     return
   }
 
-  const labels = selectedIteration.map((d) => new Date(d.timestamp).toLocaleTimeString())
+  const labels = selectedIteration.slice(1).map((d) => new Date(d.timestamp).toLocaleTimeString())
 
   const datasets = selectedRun.value.processes.map((process, index) => ({
     label: process.processName,
-    data: process.iterationMetrics[iterationIndex].map((d) => d.cpu_usage),
+    data: process.iterationMetrics[iterationIndex].slice(1).map((d) => d.cpu_usage),
     backgroundColor: getColor(index),
     borderColor: getColor(index),
     borderWidth: 1,
