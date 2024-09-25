@@ -58,13 +58,9 @@
 </template>
 
 <script setup lang="ts">
-import { FwbTooltip } from 'flowbite-vue'
-import { FontAwesomeIcon, FontAwesomeLayers } from '@fortawesome/vue-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useThemeStore } from '@/stores/theme'
-import { computed, onMounted } from 'vue'
-import { useDatabaseStore } from '@/stores/database-endpoint'
-
-const databaseStore = useDatabaseStore()
+import { computed } from 'vue'
 
 const themeStore = useThemeStore()
 const darkMode = computed(() => themeStore.darkMode)
@@ -72,12 +68,6 @@ const darkMode = computed(() => themeStore.darkMode)
 const toggleDarkMode = () => {
   themeStore.toggleDarkMode()
 }
-
-const databaseEndpoint = computed(() => databaseStore.databaseEndpoint)
-
-onMounted(() => {
-  databaseStore.fetchDatabaseEndpoint()
-})
 </script>
 
 <style scoped>

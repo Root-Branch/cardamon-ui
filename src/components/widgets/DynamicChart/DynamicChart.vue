@@ -56,6 +56,7 @@ import { useThemeStore } from '@/stores/theme'
 import type { MetaData } from '@/types/scenario.types'
 import type { Widget } from '@/types/widgets.types'
 import { MetricType } from '@/types/chart.types'
+import { getColor } from '@/utils/color.utils'
 
 const minWidth = 3
 const minHeight = 5
@@ -88,8 +89,8 @@ const chartData = computed(() => ({
     {
       label: 'Power Contribution',
       data: selectedRun.value?.processes.map((process: any) => process.powContribPerc) || [],
-      backgroundColor: darkMode.value ? darkModeChartBackgroundColor : chartBackgroundColor,
-      borderColor: darkMode.value ? darkModeChartBorderColor : chartBorderColor,
+      backgroundColor: selectedRun.value?.processes.map((_: any, index: number) => getColor(index)),
+      borderColor: selectedRun.value?.processes.map((_: any, index: number) => getColor(index)),
       borderWidth: 1
     }
   ]
@@ -122,7 +123,7 @@ const selectMetric = (metric: MetricType) => {
 
 <style scoped>
 .dynamic-chart {
-  @apply p-6 rounded-lg drop-shadow-widget bg-white dark:bg-gray-800 dark:text-gray-200 cursor-move;
+  @apply p-6 rounded-lg drop-shadow-widget bg-white dark:bg-gray-800 dark:text-gray-200 cursor-move overflow-hidden;
 }
 
 .dynamic-chart__header {
@@ -166,6 +167,6 @@ const selectMetric = (metric: MetricType) => {
 }
 
 .dynamic-chart__chart-container {
-  @apply h-72 cursor-pointer;
+  @apply h-64 cursor-pointer;
 }
 </style>
