@@ -3,8 +3,16 @@
     <div class="app-header__container">
       <div class="app-header__logo-section">
         <router-link to="/dashboard">
-          <img src="/logo-dark.svg" alt="Logo" class="app-header__logo-image block dark:hidden" />
-          <img src="/logo-light.svg" alt="Logo" class="app-header__logo-image hidden dark:block" />
+          <img
+            src="../../../assets/logo-dark.svg"
+            alt="Logo"
+            class="app-header__logo-image block dark:hidden"
+          />
+          <img
+            src="../../../assets/logo-light.svg"
+            alt="Logo"
+            class="app-header__logo-image hidden dark:block"
+          />
         </router-link>
       </div>
 

@@ -17,7 +17,7 @@
         {{ data.title }}
       </div>
       <div class="metric-card__content">
-        <span class="metric-card__value">{{ data.metadata.value.toFixed(2) }}</span>
+        <span class="metric-card__value">{{ data.metadata.value.toFixed(4) }}</span>
         <span class="metric-card__unit">{{ data.metadata.unit }}</span>
       </div>
       <!-- Widget Actions -->

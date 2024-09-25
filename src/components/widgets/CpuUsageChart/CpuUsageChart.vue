@@ -117,7 +117,7 @@ const chartOptions = {
       beginAtZero: true,
       title: {
         display: true,
-        text: 'CPU Usage (W)'
+        text: 'CPU Usage (%)'
       }
     },
     x: {

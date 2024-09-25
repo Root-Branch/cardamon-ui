@@ -30,10 +30,10 @@
               >
             </fwb-table-cell>
             <fwb-table-cell class="data-table__table-cell"
-              >{{ item.co2.toFixed(2) }} g</fwb-table-cell
+              >{{ item.co2.toFixed(4) }} g</fwb-table-cell
             >
             <fwb-table-cell class="data-table__table-cell"
-              >{{ item.pow.toFixed(2) }} W</fwb-table-cell
+              >{{ item.pow.toFixed(4) }} W</fwb-table-cell
             >
             <fwb-table-cell class="data-table__table-cell">{{
               formatLastExecution(item.lastRun)
