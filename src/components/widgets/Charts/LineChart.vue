@@ -81,8 +81,8 @@ const computedChartOptions = computed(() => {
   }
 
   return {
-    ...props.chartOptions,
-    ...baseOptions
+    ...baseOptions,
+    ...props.chartOptions
   }
 })
 </script>

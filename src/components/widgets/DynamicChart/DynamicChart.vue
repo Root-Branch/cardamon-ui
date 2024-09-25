@@ -78,7 +78,7 @@ const darkMode = computed(() => themeStore.darkMode)
 
 const totalValue = computed(() => {
   return selectedMetric.value === MetricType.POWER
-    ? `${selectedRun.value?.pow.toFixed(2)} kWh`
+    ? `${selectedRun.value?.pow.toFixed(2)} W`
     : `${selectedRun.value?.co2.toFixed(2)} g`
 })
 
