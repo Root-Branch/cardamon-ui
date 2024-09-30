@@ -17,7 +17,6 @@
       <!-- Selector for run and iteration -->
       <div class="cpu-usage__selectors">
         <div class="cpu-usage__selector-container">
-          <label for="run-iteration-select" class="cpu-usage__label">Iteration</label>
           <select
             id="run-iteration-select"
             v-model="selectedRunIteration"

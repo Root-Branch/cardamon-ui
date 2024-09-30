@@ -48,7 +48,7 @@
                 >{{ run.duration.toFixed(4) }} s</fwb-table-cell
               >
               <fwb-table-cell class="data-table__table-cell"
-                >{{ run.pow.toFixed(4) }} W</fwb-table-cell
+                >{{ run.pow.toFixed(4) }} Wh</fwb-table-cell
               >
               <fwb-table-cell class="data-table__table-cell"
                 >{{ run.co2.toFixed(4) }} g</fwb-table-cell
