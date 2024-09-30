@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+import 'chartjs-adapter-date-fns'
 import { defineProps, computed } from 'vue'
 import { Line } from 'vue-chartjs'
 import {
@@ -14,12 +15,22 @@ import {
   PointElement,
   LinearScale,
   CategoryScale,
+  TimeScale,
   type ChartData,
   type ChartOptions
 } from 'chart.js'
 import { useThemeStore } from '@/stores/theme'
 
-ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale)
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  TimeScale
+)
 
 interface ChartProps {
   chartData: ChartData<'line'>

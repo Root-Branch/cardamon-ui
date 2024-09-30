@@ -84,7 +84,6 @@ const updateChartData = () => {
   })
 
   const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b)
-  const labels = sortedTimestamps.map((ts) => new Date(ts).toLocaleTimeString())
 
   const datasets = selectedRun.value.processes
     .map((process, index) => {
@@ -95,7 +94,10 @@ const updateChartData = () => {
 
       return {
         label: process.processName,
-        data: sortedTimestamps.map((ts) => dataMap.get(ts) ?? null),
+        data: sortedTimestamps.map((ts) => ({
+          x: ts,
+          y: dataMap.get(ts) ?? null
+        })),
         backgroundColor: getColor(index),
         borderColor: getColor(index),
         borderWidth: 1,
@@ -107,7 +109,6 @@ const updateChartData = () => {
     .filter(Boolean)
 
   chartData.value = {
-    labels,
     datasets
   }
 }
@@ -139,9 +140,37 @@ const chartOptions = {
       }
     },
     x: {
+      type: 'time',
+      time: {
+        unit: 'second',
+        stepSize: 1,
+        displayFormats: {
+          second: 'HH:mm:ss'
+        }
+      },
       title: {
         display: true,
         text: 'Time'
+      },
+      ticks: {
+        source: 'auto',
+        autoSkip: false,
+        maxRotation: 0
+      }
+    }
+  },
+  plugins: {
+    tooltip: {
+      callbacks: {
+        title: (context) => {
+          const timestamp = context[0].parsed.x
+          return new Date(timestamp).toLocaleString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            fractionalSecondDigits: 3
+          })
+        }
       }
     }
   }
