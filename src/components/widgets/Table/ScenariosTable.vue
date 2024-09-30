@@ -192,10 +192,10 @@ const formatLastExecution = (timestamp: number) => {
 }
 
 .trend-up {
-  @apply text-green-500;
+  @apply text-red-500;
 }
 
 .trend-down {
-  @apply text-red-500;
+  @apply text-green-500;
 }
 </style>

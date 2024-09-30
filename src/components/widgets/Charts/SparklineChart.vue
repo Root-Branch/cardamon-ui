@@ -26,7 +26,10 @@ const props = defineProps<SparklineProps>()
 const determineLineColor = (data: number[]) => {
   if (data.length < 2) return 'rgba(0, 0, 0, 1)'
 
-  return data[data.length - 1] > data[0] ? 'rgba(75, 192, 75, 1)' : 'rgba(255, 99, 132, 1)'
+  const redLine = 'rgba(255, 99, 132, 1)'
+  const greenLine = 'rgba(75, 192, 75, 1)'
+
+  return data[data.length - 1] > data[0] ? redLine : greenLine
 }
 
 const chartData = computed(() => ({
