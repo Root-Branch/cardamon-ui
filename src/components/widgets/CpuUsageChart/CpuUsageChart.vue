@@ -69,24 +69,42 @@ const chartData = ref({ labels: [], datasets: [] } as ChartData<'line'>)
 
 const updateChartData = () => {
   const iterationIndex = selectedRunIteration.value
-  const selectedIteration = iterations.value[iterationIndex]
 
-  if (!selectedIteration) {
+  if (!selectedRun.value || !selectedRun.value.processes.length) {
     chartData.value = { labels: [], datasets: [] }
     return
   }
 
-  const labels = selectedIteration.slice(1).map((d) => new Date(d.timestamp).toLocaleTimeString())
+  const allTimestamps = new Set<number>()
+  selectedRun.value.processes.forEach((process) => {
+    const iteration = process.iterationMetrics[iterationIndex]
+    if (iteration && iteration.length > 1) {
+      iteration.slice(1).forEach((d) => allTimestamps.add(d.timestamp))
+    }
+  })
 
-  const datasets = selectedRun.value.processes.map((process, index) => ({
-    label: process.processName,
-    data: process.iterationMetrics[iterationIndex].slice(1).map((d) => d.cpu_usage),
-    backgroundColor: getColor(index),
-    borderColor: getColor(index),
-    borderWidth: 1,
-    fill: false,
-    tension: 0.1
-  }))
+  const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b)
+  const labels = sortedTimestamps.map((ts) => new Date(ts).toLocaleTimeString())
+
+  const datasets = selectedRun.value.processes
+    .map((process, index) => {
+      const iteration = process.iterationMetrics[iterationIndex]
+      if (!iteration || iteration.length <= 1) return null
+
+      const dataMap = new Map(iteration.slice(1).map((d) => [d.timestamp, d.cpu_usage]))
+
+      return {
+        label: process.processName,
+        data: sortedTimestamps.map((ts) => dataMap.get(ts) ?? null),
+        backgroundColor: getColor(index),
+        borderColor: getColor(index),
+        borderWidth: 1,
+        fill: false,
+        tension: 0.1,
+        spanGaps: true
+      }
+    })
+    .filter(Boolean)
 
   chartData.value = {
     labels,
