@@ -22,12 +22,16 @@
       <div class="data-table__table-container">
         <fwb-table hoverable>
           <fwb-table-head class="data-table__table-header">
+            <fwb-table-head-cell class="data-table__table-head-cell">Region</fwb-table-head-cell>
             <fwb-table-head-cell class="data-table__table-head-cell"
               >Start Time</fwb-table-head-cell
             >
             <fwb-table-head-cell class="data-table__table-head-cell">Duration</fwb-table-head-cell>
             <fwb-table-head-cell class="data-table__table-head-cell"
               >Power Consumption</fwb-table-head-cell
+            >
+            <fwb-table-head-cell class="data-table__table-head-cell"
+              >Carbon Intensity</fwb-table-head-cell
             >
             <fwb-table-head-cell class="data-table__table-head-cell"
               >CO2 Emission</fwb-table-head-cell
@@ -41,6 +45,7 @@
               class="data-table__table-row"
               @click="selectRun(run)"
             >
+              <fwb-table-cell class="data-table__table-cell">{{ run.region }}</fwb-table-cell>
               <fwb-table-cell class="data-table__table-cell">{{
                 formatDateTime(run.startTime)
               }}</fwb-table-cell>
@@ -49,6 +54,9 @@
               >
               <fwb-table-cell class="data-table__table-cell"
                 >{{ run.pow.toFixed(4) }} Wh</fwb-table-cell
+              >
+              <fwb-table-cell class="data-table__table-cell"
+                >{{ run.ci.toFixed(4) }} gWh</fwb-table-cell
               >
               <fwb-table-cell class="data-table__table-cell"
                 >{{ run.co2.toFixed(4) }} g</fwb-table-cell
